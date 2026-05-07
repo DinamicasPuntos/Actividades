@@ -74,9 +74,29 @@ async function cargarComisiones() {
         if(!data.comisiones || data.comisiones.length === 0){
             tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:var(--text-muted)">No hay dinámicas liquidadas en este periodo.</td></tr>`;
         } else {
+            // 💡 MAGIA AQUÍ: Creamos un agrupador para sumar los montos del mismo laboratorio
+            const comisionesAgrupadas = {};
+
             data.comisiones.forEach(item => {
+                // Usamos el laboratorio y la unidad como "llave" 
+                // (por si un laboratorio paga en Puntos y en Unidades, no se mezclen mal)
+                const llave = `${item.laboratorio}_${item.unidad_label}`;
+
+                if (!comisionesAgrupadas[llave]) {
+                    // Si es la primera vez que vemos este laboratorio, lo creamos
+                    comisionesAgrupadas[llave] = {
+                        laboratorio: item.laboratorio,
+                        monto: 0,
+                        unidad_label: item.unidad_label
+                    };
+                }
+                // Le sumamos el monto al total de ese laboratorio
+                comisionesAgrupadas[llave].monto += item.monto;
+            });
+
+            // 💡 Ahora sí, pintamos los datos agrupados
+            Object.values(comisionesAgrupadas).forEach(item => {
                 total += item.monto;
-                // APLICAMOS LA UNIDAD DINÁMICA (Unidades o Puntos)
                 tbody.innerHTML += `<tr>
                     <td><i class="fas fa-flask" style="color:var(--primary); margin-right:8px;"></i> <span style="font-weight:600;">${item.laboratorio}</span></td>
                     <td class="text-right" style="font-weight:700;">${item.unidad_label} ${item.monto.toLocaleString()}</td>
@@ -85,7 +105,6 @@ async function cargarComisiones() {
         }
 
         document.getElementById('mainLabel').innerText = "Total Liquidado";
-        // Al total global le quitamos la palabra fija para que no choque si hay mezcla de unidades
         document.getElementById('totalGeneral').innerText = `Total: ${total.toLocaleString()}`;
         
     } catch (e) { 
