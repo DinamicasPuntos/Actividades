@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
-    <title>Panel de Control | Sistema de Comisiones</title>
+    <title>Panel de Control | Recolección de puntos</title>
     <link rel="stylesheet" href="dashboard-style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -47,13 +47,13 @@
                     <i class="fas fa-fire"></i> Seguimiento Activo
                 </button>
                 <button onclick="switchView('comisiones')" id="tab-comisiones" class="tab-btn">
-                    <i class="fas fa-wallet"></i> Mis Liquidaciones
+                    <i class="fas fa-wallet"></i> Mis Puntos
                 </button>
             </nav>
 
             <section class="stats-grid">
                 <div class="stat-card">
-                    <span class="stat-label" id="mainLabel">Faltante Total Mes (Personal)</span>
+                    <span class="stat-label" id="mainLabel">Total Puntos</span>
                     <div class="stat-value" id="totalGeneral">0</div>
                 </div>
                 <div class="stat-card">
@@ -67,7 +67,7 @@
             <div class="content-card">
                 <div id="view-dinamicas" class="view-section" style="padding: 20px;">
                     <div class="table-header-grid" style="grid-template-columns: 1fr; margin-bottom: 15px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; text-align: center;">
-                        <strong style="color: var(--text-main); font-size: 1.1rem;">Detalle de Productos y Metas (Tú vs Sucursal)</strong>
+                        <strong style="color: var(--text-main); font-size: 1.1rem;">Proceso y metas por actividad</strong>
                     </div>
                     <div id="tableDinamicas">
                         </div>
@@ -78,7 +78,7 @@
                         <thead>
                             <tr>
                                 <th>Laboratorio / Producto</th>
-                                <th class="text-right">Monto Ganado</th>
+                                <th class="text-right">Monto Obtenido</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody"></tbody>
