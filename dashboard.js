@@ -104,7 +104,7 @@ async function cargarComisiones() {
             });
         }
 
-        document.getElementById('mainLabel').innerText = "Total Liquidado";
+        document.getElementById('mainLabel').innerText = "Total Obtenido";
         document.getElementById('totalGeneral').innerText = `Total: ${total.toLocaleString()}`;
         
     } catch (e) { 
