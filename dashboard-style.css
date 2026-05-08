@@ -130,9 +130,49 @@ body { background-color: var(--bg-body); font-family: 'Inter', sans-serif; margi
 .logout-pill:hover { transform: scale(1.05); }
 
 .dashboard-body { max-width: 1000px; margin: 2rem auto; padding: 0 1.5rem; }
+
 .view-switcher { display: flex; gap: 10px; margin-bottom: 2rem; }
-.tab-btn { padding: 12px 24px; border: 1px solid var(--border); background: var(--white); border-radius: 12px; cursor: pointer; color: var(--text-muted); font-weight: 600; transition: 0.3s;}
-.tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 12px rgba(0, 172, 236, 0.25); }
+
+.tab-btn { 
+    padding: 12px 24px; 
+    border: 1px solid var(--border); 
+    background: var(--white); 
+    border-radius: 12px; 
+    cursor: pointer; 
+    color: var(--text-muted); 
+    font-weight: 600; 
+    /* Cambiamos la transición para que el movimiento sea súper suave (curva natural) */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+}
+
+/* EFECTO HOVER: El botón inactivo se levanta, gana una sombra suave y el texto se pinta de azul */
+.tab-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.05);
+    color: var(--primary);
+    border-color: #bae6fd;
+}
+
+.tab-btn.active { 
+    background: var(--primary); 
+    color: white; 
+    border-color: var(--primary); 
+    box-shadow: 0 4px 12px rgba(0, 172, 236, 0.25); 
+}
+
+/* EFECTO HOVER (Botón Activo): Se levanta, la sombra azul se intensifica y el color se oscurece un poco */
+.tab-btn.active:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 172, 236, 0.4);
+    background: #0284c7; 
+    border-color: #0284c7;
+}
+
+/* Efecto visual al hacer clic (simula hundir el botón) */
+.tab-btn:active {
+    transform: translateY(0px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
 
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
 .stat-card { background: var(--white); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
