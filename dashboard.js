@@ -23,14 +23,22 @@ window.onload = () => {
     document.getElementById('userName').innerText = localStorage.getItem('nombre_usuario') || "Empleado";
     document.getElementById('userCedula').innerHTML = `<i class="fas fa-id-card"></i> C.C. ${localStorage.getItem('documento_usuario') || "Sin registro"}`;
     
-    // --- MAGIA DE LIDERAZGO: Leemos el cargo para saber qué mostrar ---
-    const cargo = (localStorage.getItem('cargo_usuario') || "").toUpperCase();
+    // --- MAGIA DE LIDERAZGO CON IMPRESIÓN EN CONSOLA ---
+    const cargoBruto = localStorage.getItem('cargo_usuario');
+    const cargo = (cargoBruto || "").toUpperCase();
+    
+    // 🕵️‍♂️ NUESTROS ESPÍAS:
+    console.log("=== REPORTE DE SESIÓN ===");
+    console.log("1. Cargo exacto guardado en memoria:", cargoBruto);
+    console.log("2. Cargo convertido a mayúsculas:", cargo);
+    console.log("3. ¿Tiene permiso de líder?:", cargo.includes("SUPERVISOR") || cargo.includes("COORDINADOR"));
+    console.log("=========================");
     
     if (cargo.includes("SUPERVISOR") || cargo.includes("COORDINADOR")) {
         document.getElementById('tab-lideres').classList.remove('hidden');
-        switchView('lideres'); // Los líderes arrancan viendo a sus equipos
+        switchView('lideres'); 
     } else {
-        switchView('dinamicas'); // Los vendedores arrancan viendo sus propias dinámicas
+        switchView('dinamicas'); 
     }
 };
 
