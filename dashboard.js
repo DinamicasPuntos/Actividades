@@ -1,12 +1,11 @@
 // Cambia la URL según donde estés probando
 const API_URL = "https://vague-monika-preimportantly.ngrok-free.dev"; 
-// const API_URL = "https://vague-monika-preimportantly.ngrok-free.dev";
+// const API_URL = "http://127.0.0.1:8000";
 
 function showLoader() { document.getElementById('loader').classList.add('active'); }
 function hideLoader() { document.getElementById('loader').classList.remove('active'); }
 
 window.onload = () => {
-
     cargarBanners();
 
     const token = localStorage.getItem('access_token');
@@ -24,26 +23,135 @@ window.onload = () => {
     document.getElementById('userName').innerText = localStorage.getItem('nombre_usuario') || "Empleado";
     document.getElementById('userCedula').innerHTML = `<i class="fas fa-id-card"></i> C.C. ${localStorage.getItem('documento_usuario') || "Sin registro"}`;
     
-
-
-    // Cambiamos para que arranque en la vista de dinámicas
-    switchView('dinamicas');
+    // --- MAGIA DE LIDERAZGO: Leemos el cargo para saber qué mostrar ---
+    const cargo = (localStorage.getItem('cargo_usuario') || "").toUpperCase();
+    
+    if (cargo.includes("SUPERVISOR") || cargo.includes("COORDINADOR")) {
+        document.getElementById('tab-lideres').classList.remove('hidden');
+        switchView('lideres'); // Los líderes arrancan viendo a sus equipos
+    } else {
+        switchView('dinamicas'); // Los vendedores arrancan viendo sus propias dinámicas
+    }
 };
 
 async function switchView(view) {
-    const tabs = { com: document.getElementById('tab-comisiones'), din: document.getElementById('tab-dinamicas') };
-    const views = { com: document.getElementById('view-comisiones'), din: document.getElementById('view-dinamicas') };
+    const tabs = { 
+        com: document.getElementById('tab-comisiones'), 
+        din: document.getElementById('tab-dinamicas'),
+        lid: document.getElementById('tab-lideres') // Nuevo
+    };
+    const views = { 
+        com: document.getElementById('view-comisiones'), 
+        din: document.getElementById('view-dinamicas'),
+        lid: document.getElementById('view-lideres') // Nuevo
+    };
 
-    if (view === 'comisiones') {
-        tabs.com.classList.add('active'); tabs.din.classList.remove('active');
-        views.com.classList.remove('hidden'); views.din.classList.add('hidden');
+    // Reseteamos todas las clases
+    Object.values(tabs).forEach(t => t && t.classList.remove('active'));
+    Object.values(views).forEach(v => v && v.classList.add('hidden'));
+
+    // Activamos la vista solicitada
+    if (view === 'lideres') {
+        tabs.lid.classList.add('active');
+        views.lid.classList.remove('hidden');
+        document.getElementById('mainLabel').innerText = "Resumen de Zona";
+        document.getElementById('totalGeneral').innerText = "Visualizando...";
+        await cargarEquiposLider();
+    } else if (view === 'comisiones') {
+        tabs.com.classList.add('active');
+        views.com.classList.remove('hidden');
         await cargarComisiones();
     } else {
-        tabs.din.classList.add('active'); tabs.com.classList.remove('active');
-        views.din.classList.remove('hidden'); views.com.classList.add('hidden');
+        tabs.din.classList.add('active');
+        views.din.classList.remove('hidden');
         await cargarDinamicas();
     }
 }
+
+// --- NUEVA FUNCIÓN: CARGAR EQUIPOS DE LÍDERES ---
+async function cargarEquiposLider() {
+    showLoader();
+    const token = localStorage.getItem('access_token');
+    const fecha = document.getElementById('fechaFiltro').value;
+    
+    try {
+        const res = await fetch(`${API_URL}/lideres/mis-equipos?fecha=${fecha}`, {
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'ngrok-skip-browser-warning': '69420' 
+            }
+        });
+        
+        if (res.status === 401) return logout();
+
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.detail || "Error al cargar los datos del equipo");
+        }
+
+        const data = await res.json();
+        const container = document.getElementById('containerLideres');
+        container.innerHTML = "";
+
+        if (!data.dinamicas_lider || data.dinamicas_lider.length === 0) {
+            container.innerHTML = `<div style="text-align:center; padding:3rem; color:var(--text-muted)">No hay equipos bajo tu supervisión en este periodo.</div>`;
+            document.getElementById('totalGeneral').innerText = "Sin datos";
+            return;
+        }
+
+        let sucursalesMostradas = 0;
+
+        data.dinamicas_lider.forEach(din => {
+            const badgeColor = din.unidad === 'Unds' ? '#3b82f6' : '#10b981';
+            const textoUnidad = din.unidad === 'Unds' ? 'Unidades Rotadas' : 'Ingresos';
+
+            let htmlSucursales = din.sucursales.map(suc => {
+                sucursalesMostradas++;
+                return `
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                        <strong style="color: #1e293b;"><i class="fas fa-store-alt" style="color: var(--text-muted); margin-right: 5px;"></i> ${suc.nombre_pdv}</strong>
+                        <span style="color: ${suc.faltante > 0 ? '#e11d48' : '#10b981'}; font-weight: bold; font-size: 0.85rem;">
+                            ${suc.faltante > 0 ? 'Faltan ' + suc.faltante.toLocaleString() + ' ' + textoUnidad : '¡Meta Cumplida!'}
+                        </span>
+                    </div>
+                    <div style="background: #f1f5f9; border-radius: 8px; height: 10px; overflow: hidden; width: 100%;">
+                        <div style="width: ${suc.progreso}%; background: ${suc.progreso >= 100 ? '#10b981' : '#00acec'}; height: 100%; transition: width 0.8s ease;"></div>
+                    </div>
+                    <div style="text-align: right; font-size: 0.75rem; color: #64748b; margin-top: 6px; font-weight: 600;">
+                        ${suc.actual.toLocaleString()} / ${suc.meta.toLocaleString()} (${suc.progreso.toFixed(1)}%)
+                    </div>
+                </div>`;
+            }).join('');
+
+            container.innerHTML += `
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-chevron-down acc-icon"></i>
+                            <strong style="font-size: 1.1rem; color: var(--text-main);">${din.nombre}</strong>
+                            <span style="background: ${badgeColor}20; color: ${badgeColor}; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">${din.tipo_dinamica}</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
+                            ${din.sucursales.length} Sucursales
+                        </div>
+                    </div>
+                    <div class="accordion-content" style="padding: 15px; background: #f8fafc;">
+                        ${htmlSucursales}
+                    </div>
+                </div>`;
+        });
+
+        document.getElementById('totalGeneral').innerText = "Zona Activa";
+
+    } catch (e) {
+        console.error(e);
+        document.getElementById('containerLideres').innerHTML = `<div style="text-align:center; padding: 2rem; color:#e11d48; font-weight:bold;">⚠️ ${e.message}</div>`;
+    } finally {
+        hideLoader();
+    }
+}
+// --------------------------------------------------------
 
 async function cargarComisiones() {
     showLoader();
@@ -74,27 +182,21 @@ async function cargarComisiones() {
         if(!data.comisiones || data.comisiones.length === 0){
             tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:var(--text-muted)">No obtuviste puntos en este periodo.</td></tr>`;
         } else {
-            // 💡 MAGIA AQUÍ: Creamos un agrupador para sumar los montos del mismo laboratorio
             const comisionesAgrupadas = {};
 
             data.comisiones.forEach(item => {
-                // Usamos el laboratorio y la unidad como "llave" 
-                // (por si un laboratorio paga en Puntos y en Unidades, no se mezclen mal)
                 const llave = `${item.laboratorio}_${item.unidad_label}`;
 
                 if (!comisionesAgrupadas[llave]) {
-                    // Si es la primera vez que vemos este laboratorio, lo creamos
                     comisionesAgrupadas[llave] = {
                         laboratorio: item.laboratorio,
                         monto: 0,
                         unidad_label: item.unidad_label
                     };
                 }
-                // Le sumamos el monto al total de ese laboratorio
                 comisionesAgrupadas[llave].monto += item.monto;
             });
 
-            // 💡 Ahora sí, pintamos los datos agrupados
             Object.values(comisionesAgrupadas).forEach(item => {
                 total += item.monto;
                 tbody.innerHTML += `<tr>
@@ -157,7 +259,6 @@ async function cargarDinamicas() {
         for (const [nombreDinamica, productos] of Object.entries(agrupadas)) {
             let faltanteDinamica = 0;
             
-            // Lógica de etiquetas y colores movida AQUÍ ADENTRO:
             const textoUnidadGrupo = productos[0].unidad === 'Unds' ? 'Unidades Rotadas' : 'Ingresos';
             const tipoDinamica = productos[0].tipo_dinamica || 'Dinámica';
             const badgeColor = productos[0].unidad === 'Unds' ? '#3b82f6' : '#10b981';
@@ -168,7 +269,6 @@ async function cargarDinamicas() {
                 
                 const textoUnidad = d.unidad === 'Unds' ? 'Unidades Rotadas' : 'Ingresos';
                 
-                // Colores para las barras (Verde si logra meta, Azul para personal, Naranja para PDV)
                 const colorInd = d.progreso >= 100 ? 'var(--success, #10b981)' : 'var(--primary, #3b82f6)';
                 const colorPdv = d.progreso_pdv >= 100 ? 'var(--success, #10b981)' : '#f59e0b';
                 
@@ -243,9 +343,12 @@ async function cargarDinamicas() {
     }
 }
 
+// Actualizamos el filtro para que también funcione con la pestaña de líderes
 function cargarDinamicasConFiltro() {
-    const vistaActiva = document.getElementById('tab-comisiones').classList.contains('active') ? 'comisiones' : 'dinamicas';
-    if(vistaActiva === 'comisiones') {
+    const vistaActivaId = document.querySelector('.tab-btn.active').id;
+    if(vistaActivaId === 'tab-lideres') {
+        cargarEquiposLider();
+    } else if(vistaActivaId === 'tab-comisiones') {
         cargarComisiones();
     } else {
         cargarDinamicas();
@@ -283,11 +386,9 @@ function renderizarCarrusel() {
     dotsContainer.innerHTML = '';
 
     bannersData.forEach((banner, index) => {
-        // Crear la diapositiva
         const slide = document.createElement('div');
         slide.className = `carousel-slide ${index === 0 ? 'active' : ''}`;
         
-        // Asignamos la imagen por defecto o la cruzada si alguna falta
         const urlDesktop = banner.desktop || banner.mobile;
         const urlMobile = banner.mobile || banner.desktop;
 
@@ -297,7 +398,6 @@ function renderizarCarrusel() {
         `;
         slidesContainer.appendChild(slide);
 
-        // Crear el punto de navegación inferior
         const dot = document.createElement('div');
         dot.className = `carousel-dot ${index === 0 ? 'active' : ''}`;
         dot.onclick = () => irASlide(index);
@@ -314,21 +414,18 @@ function irASlide(index) {
     const dots = document.querySelectorAll('.carousel-dot');
     if(slides.length === 0) return;
 
-    // Lógica circular (Si pasa de la última, vuelve a la primera)
     if (index >= slides.length) currentSlide = 0;
     else if (index < 0) currentSlide = slides.length - 1;
     else currentSlide = index;
 
-    // Actualizar clases CSS para el efecto visual
     slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
     dots.forEach((d, i) => d.classList.toggle('active', i === currentSlide));
 
-    // Reiniciar el temporizador para que no cambie de golpe si el usuario acaba de hacer clic
     reiniciarCarruselAuto();
 }
 
 function iniciarCarruselAuto() {
-    slideInterval = setInterval(() => { moveSlide(1); }, 5000); // 5000ms = 5 Segundos
+    slideInterval = setInterval(() => { moveSlide(1); }, 5000); 
 }
 
 function reiniciarCarruselAuto() {
