@@ -33,16 +33,20 @@
 
             <div class="carousel-container" id="bannerCarousel">
                 <div class="carousel-slides" id="carouselSlides">
-                    </div>
+                </div>
                 
                 <button class="carousel-btn prev" onclick="moveSlide(-1)"><i class="fas fa-chevron-left"></i></button>
                 <button class="carousel-btn next" onclick="moveSlide(1)"><i class="fas fa-chevron-right"></i></button>
                 
                 <div class="carousel-dots" id="carouselDots">
-                    </div>
+                </div>
             </div>  
 
             <nav class="view-switcher">
+                <button onclick="switchView('lideres')" id="tab-lideres" class="tab-btn hidden">
+                    <i class="fas fa-users-cog"></i> Visión Equipo
+                </button>
+                
                 <button onclick="switchView('dinamicas')" id="tab-dinamicas" class="tab-btn active">
                     <i class="fas fa-fire"></i> Seguimiento Activo
                 </button>
@@ -65,12 +69,20 @@
             </section>
 
             <div class="content-card">
+                <div id="view-lideres" class="view-section hidden" style="padding: 20px;">
+                    <div class="table-header-grid" style="grid-template-columns: 1fr; margin-bottom: 15px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; text-align: center;">
+                        <strong style="color: var(--text-main); font-size: 1.1rem;">Supervisión de Sucursales a Cargo</strong>
+                    </div>
+                    <div id="containerLideres">
+                        </div>
+                </div>
+
                 <div id="view-dinamicas" class="view-section" style="padding: 20px;">
                     <div class="table-header-grid" style="grid-template-columns: 1fr; margin-bottom: 15px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; text-align: center;">
                         <strong style="color: var(--text-main); font-size: 1.1rem;">Proceso y metas por actividad</strong>
                     </div>
                     <div id="tableDinamicas">
-                        </div>
+                    </div>
                 </div>
 
                 <div id="view-comisiones" class="view-section hidden">
