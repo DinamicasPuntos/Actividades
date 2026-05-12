@@ -108,7 +108,9 @@ async function cargarVisionAdmin() {
     const fecha = document.getElementById('fechaFiltro').value;
     
     try {
-        const res = await fetch(`${API_URL}/admin/vision-global?fecha=${fecha}`, {
+        // 💡 CACHE-BUSTER: Agregamos la hora exacta al final para forzar la descarga de la nueva estructura
+        const url = `${API_URL}/admin/vision-global?fecha=${fecha}&_cb=${new Date().getTime()}`;
+        const res = await fetch(url, {
             headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': '69420' }
         });
         
@@ -117,7 +119,6 @@ async function cargarVisionAdmin() {
 
         adminDataMaster = await res.json();
         
-        // 💡 CORRECCIÓN DEL BUG: Llamamos a la función correcta
         cambiarSubVistaAdmin(adminSubVistaActual);
 
     } catch (e) {
@@ -131,7 +132,6 @@ async function cargarVisionAdmin() {
 function cambiarSubVistaAdmin(nivel) {
     showLoader();
     
-    // Le agregamos 'especial' a la lista de iteración
     ['nacional', 'coordinador', 'supervisor', 'especial'].forEach(n => {
         const btn = document.getElementById(`subtab-${n}`);
         if(btn) {
@@ -216,73 +216,97 @@ function renderizarVistaAdmin(agrupado) {
             
             // Si la vista activa es la ESPECIAL, dibujamos 3 barras
             if (adminSubVistaActual === 'especial') {
-                const msgGeneral = d.faltante_general > 0 ? `Faltan ${d.faltante_general.toLocaleString()} ${textoUnidad}` : '¡Logrado!';
-                const msgCall = d.faltante_call > 0 ? `Faltan ${d.faltante_call.toLocaleString()}` : '¡Logrado!';
-                const msgSuper = d.faltante_super > 0 ? `Faltan ${d.faltante_super.toLocaleString()}` : '¡Logrado!';
+                // 🛡️ BLINDAJE DE VARIABLES ANTI-CRASH:
+                const f_gen = d.faltante_general || 0;
+                const msgGeneral = f_gen > 0 ? `Faltan ${f_gen.toLocaleString()} ${textoUnidad}` : '¡Logrado!';
                 
+                const f_call = d.faltante_call || 0;
+                const msgCall = f_call > 0 ? `Faltan ${f_call.toLocaleString()}` : '¡Logrado!';
+                
+                const f_super = d.faltante_super || 0;
+                const msgSuper = f_super > 0 ? `Faltan ${f_super.toLocaleString()}` : '¡Logrado!';
+                
+                const act_gen = d.actual_general || 0;
+                const met_gen = d.meta_general || 0;
+                const prog_gen = d.progreso_general || 0;
+
+                const act_call = d.actual_call || 0;
+                const met_call = d.meta_call || 0;
+                const prog_call = d.progreso_call || 0;
+
+                const act_super = d.actual_super || 0;
+                const met_super = d.meta_super || 0;
+                const prog_super = d.progreso_super || 0;
+
                 return `
                 <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
-                        <strong style="color: #1e293b; font-size: 1.1rem;">${d.dinamica}</strong>
-                        <span style="background: ${badgeColor}20; color: ${badgeColor}; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 0.75rem;">${d.tipo_dinamica.toUpperCase()}</span>
+                        <strong style="color: #1e293b; font-size: 1.1rem;">${d.dinamica || "Dinámica"}</strong>
+                        <span style="background: ${badgeColor}20; color: ${badgeColor}; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 0.75rem;">${(d.tipo_dinamica || "N/A").toUpperCase()}</span>
                     </div>
                     
                     <div style="margin-bottom: 15px;">
                         <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px;">
                             <span style="font-weight: 700; color: #334155;"><i class="fas fa-chart-pie" style="color: var(--primary);"></i> General (Ambos Canales)</span>
-                            <span style="color: ${d.faltante_general > 0 ? '#e11d48' : '#10b981'}; font-weight:bold;">${msgGeneral}</span>
+                            <span style="color: ${f_gen > 0 ? '#e11d48' : '#10b981'}; font-weight:bold;">${msgGeneral}</span>
                         </div>
                         <div style="background: #f1f5f9; border-radius: 6px; height: 10px; overflow: hidden; width: 100%;">
-                            <div style="width: ${d.progreso_general}%; background: ${d.progreso_general >= 100 ? '#10b981' : '#00acec'}; height: 100%; transition: width 0.8s ease;"></div>
+                            <div style="width: ${prog_gen}%; background: ${prog_gen >= 100 ? '#10b981' : '#00acec'}; height: 100%; transition: width 0.8s ease;"></div>
                         </div>
                         <div style="text-align: right; font-size: 0.75rem; color: #64748b; margin-top: 4px; font-weight: 600;">
-                            ${d.actual_general.toLocaleString()} / ${d.meta_general.toLocaleString()} (${d.progreso_general.toFixed(1)}%)
+                            ${act_gen.toLocaleString()} / ${met_gen.toLocaleString()} (${prog_gen.toFixed(1)}%)
                         </div>
                     </div>
 
                     <div style="margin-bottom: 12px; padding-left: 12px; border-left: 2px solid #e2e8f0;">
                         <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px;">
                             <span style="font-weight: 600; color: #475569;"><i class="fas fa-headset" style="color: #f59e0b;"></i> Solo Call Centers</span>
-                            <span style="color: ${d.faltante_call > 0 ? '#e11d48' : '#10b981'}; font-weight:bold;">${msgCall}</span>
+                            <span style="color: ${f_call > 0 ? '#e11d48' : '#10b981'}; font-weight:bold;">${msgCall}</span>
                         </div>
                         <div style="background: #f1f5f9; border-radius: 6px; height: 6px; overflow: hidden; width: 100%;">
-                            <div style="width: ${d.progreso_call}%; background: ${d.progreso_call >= 100 ? '#10b981' : '#f59e0b'}; height: 100%; transition: width 0.8s ease;"></div>
+                            <div style="width: ${prog_call}%; background: ${prog_call >= 100 ? '#10b981' : '#f59e0b'}; height: 100%; transition: width 0.8s ease;"></div>
                         </div>
                         <div style="text-align: right; font-size: 0.7rem; color: #64748b; margin-top: 4px; font-weight: 600;">
-                            ${d.actual_call.toLocaleString()} / ${d.meta_call.toLocaleString()} (${d.progreso_call.toFixed(1)}%)
+                            ${act_call.toLocaleString()} / ${met_call.toLocaleString()} (${prog_call.toFixed(1)}%)
                         </div>
                     </div>
 
                     <div style="padding-left: 12px; border-left: 2px solid #e2e8f0;">
                         <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px;">
                             <span style="font-weight: 600; color: #475569;"><i class="fas fa-bolt" style="color: #8b5cf6;"></i> Solo Supernumerarios</span>
-                            <span style="color: ${d.faltante_super > 0 ? '#e11d48' : '#10b981'}; font-weight:bold;">${msgSuper}</span>
+                            <span style="color: ${f_super > 0 ? '#e11d48' : '#10b981'}; font-weight:bold;">${msgSuper}</span>
                         </div>
                         <div style="background: #f1f5f9; border-radius: 6px; height: 6px; overflow: hidden; width: 100%;">
-                            <div style="width: ${d.progreso_super}%; background: ${d.progreso_super >= 100 ? '#10b981' : '#8b5cf6'}; height: 100%; transition: width 0.8s ease;"></div>
+                            <div style="width: ${prog_super}%; background: ${prog_super >= 100 ? '#10b981' : '#8b5cf6'}; height: 100%; transition: width 0.8s ease;"></div>
                         </div>
                         <div style="text-align: right; font-size: 0.7rem; color: #64748b; margin-top: 4px; font-weight: 600;">
-                            ${d.actual_super.toLocaleString()} / ${d.meta_super.toLocaleString()} (${d.progreso_super.toFixed(1)}%)
+                            ${act_super.toLocaleString()} / ${met_super.toLocaleString()} (${prog_super.toFixed(1)}%)
                         </div>
                     </div>
                 </div>`;
             } 
             // Si es CUALQUIER OTRA VISTA (Nacional, Coordinador, Supervisor), dibujamos 1 sola barra
             else {
+                // 🛡️ BLINDAJE DE VARIABLES ESTÁNDAR
+                const f_norm = d.faltante || 0;
+                const a_norm = d.actual || 0;
+                const m_norm = d.meta || 0;
+                const p_norm = d.progreso || 0;
+
                 return `
                 <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                        <strong style="color: #1e293b;">${d.dinamica}</strong>
-                        <span style="color: ${d.faltante > 0 ? '#e11d48' : '#10b981'}; font-weight: bold; font-size: 0.85rem;">
-                            ${d.faltante > 0 ? 'Faltan ' + d.faltante.toLocaleString() + ' ' + textoUnidad : '¡Logrado!'}
+                        <strong style="color: #1e293b;">${d.dinamica || "Dinámica"}</strong>
+                        <span style="color: ${f_norm > 0 ? '#e11d48' : '#10b981'}; font-weight: bold; font-size: 0.85rem;">
+                            ${f_norm > 0 ? 'Faltan ' + f_norm.toLocaleString() + ' ' + textoUnidad : '¡Logrado!'}
                         </span>
                     </div>
                     <div style="background: #f1f5f9; border-radius: 8px; height: 10px; overflow: hidden; width: 100%;">
-                        <div style="width: ${d.progreso}%; background: ${d.progreso >= 100 ? '#10b981' : '#00acec'}; height: 100%; transition: width 0.8s ease;"></div>
+                        <div style="width: ${p_norm}%; background: ${p_norm >= 100 ? '#10b981' : '#00acec'}; height: 100%; transition: width 0.8s ease;"></div>
                     </div>
                     <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-top: 8px;">
-                        <span style="background: ${badgeColor}20; color: ${badgeColor}; padding: 2px 8px; border-radius: 8px; font-weight: 700;">${d.tipo_dinamica.toUpperCase()}</span>
-                        <span style="color: #64748b; font-weight: 600;">${d.actual.toLocaleString()} / ${d.meta.toLocaleString()} (${d.progreso.toFixed(1)}%)</span>
+                        <span style="background: ${badgeColor}20; color: ${badgeColor}; padding: 2px 8px; border-radius: 8px; font-weight: 700;">${(d.tipo_dinamica || "N/A").toUpperCase()}</span>
+                        <span style="color: #64748b; font-weight: 600;">${a_norm.toLocaleString()} / ${m_norm.toLocaleString()} (${p_norm.toFixed(1)}%)</span>
                     </div>
                 </div>`;
             }
@@ -317,7 +341,8 @@ async function cargarEquiposLider() {
     const fecha = document.getElementById('fechaFiltro').value;
     
     try {
-        const res = await fetch(`${API_URL}/lideres/mis-equipos?fecha=${fecha}`, {
+        const url = `${API_URL}/lideres/mis-equipos?fecha=${fecha}&_cb=${new Date().getTime()}`;
+        const res = await fetch(url, {
             headers: { 
                 'Authorization': `Bearer ${token}`,
                 'ngrok-skip-browser-warning': '69420' 
@@ -346,6 +371,12 @@ async function cargarEquiposLider() {
             const textoUnidad = din.unidad === 'Unds' ? 'Unidades Rotadas' : 'Ingresos';
 
             let htmlSucursales = din.sucursales.map(suc => {
+                // 🛡️ BLINDAJE LÍDERES
+                const s_falt = suc.faltante || 0;
+                const s_act = suc.actual || 0;
+                const s_met = suc.meta || 0;
+                const s_prog = suc.progreso || 0;
+
                 return `
                 <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
@@ -353,15 +384,15 @@ async function cargarEquiposLider() {
                             <i class="fas fa-map-marker-alt" style="color: var(--text-muted); margin-right: 5px;"></i> 
                             ${suc.nombre_pdv} 
                         </strong>
-                        <span style="color: ${suc.faltante > 0 ? '#e11d48' : '#10b981'}; font-weight: bold; font-size: 0.85rem;">
-                            ${suc.faltante > 0 ? 'Faltan ' + suc.faltante.toLocaleString() + ' ' + textoUnidad : '¡Meta Cumplida!'}
+                        <span style="color: ${s_falt > 0 ? '#e11d48' : '#10b981'}; font-weight: bold; font-size: 0.85rem;">
+                            ${s_falt > 0 ? 'Faltan ' + s_falt.toLocaleString() + ' ' + textoUnidad : '¡Meta Cumplida!'}
                         </span>
                     </div>
                     <div style="background: #f1f5f9; border-radius: 8px; height: 10px; overflow: hidden; width: 100%;">
-                        <div style="width: ${suc.progreso}%; background: ${suc.progreso >= 100 ? '#10b981' : '#00acec'}; height: 100%; transition: width 0.8s ease;"></div>
+                        <div style="width: ${s_prog}%; background: ${s_prog >= 100 ? '#10b981' : '#00acec'}; height: 100%; transition: width 0.8s ease;"></div>
                     </div>
                     <div style="text-align: right; font-size: 0.75rem; color: #64748b; margin-top: 6px; font-weight: 600;">
-                        ${suc.actual.toLocaleString()} / ${suc.meta.toLocaleString()} (${suc.progreso.toFixed(1)}%)
+                        ${s_act.toLocaleString()} / ${s_met.toLocaleString()} (${s_prog.toFixed(1)}%)
                     </div>
                 </div>`;
             }).join('');
@@ -403,7 +434,8 @@ async function cargarComisiones() {
     const fecha = document.getElementById('fechaFiltro').value;
     
     try {
-        const res = await fetch(`${API_URL}/comisiones/mis-datos?fecha=${fecha}`, {
+        const url = `${API_URL}/comisiones/mis-datos?fecha=${fecha}&_cb=${new Date().getTime()}`;
+        const res = await fetch(url, {
             headers: { 
                 'Authorization': `Bearer ${token}`,
                 'ngrok-skip-browser-warning': '69420' 
@@ -438,7 +470,7 @@ async function cargarComisiones() {
                         unidad_label: item.unidad_label
                     };
                 }
-                comisionesAgrupadas[llave].monto += item.monto;
+                comisionesAgrupadas[llave].monto += (item.monto || 0);
             });
 
             Object.values(comisionesAgrupadas).forEach(item => {
@@ -467,7 +499,8 @@ async function cargarDinamicas() {
     const fecha = document.getElementById('fechaFiltro').value;
     
     try {
-        const res = await fetch(`${API_URL}/comisiones/mis-dinamicas?fecha=${fecha}`, {
+        const url = `${API_URL}/comisiones/mis-dinamicas?fecha=${fecha}&_cb=${new Date().getTime()}`;
+        const res = await fetch(url, {
             headers: { 
                 'Authorization': `Bearer ${token}`,
                 'ngrok-skip-browser-warning': '69420'
@@ -508,13 +541,20 @@ async function cargarDinamicas() {
             const badgeColor = productos[0].unidad === 'Unds' ? '#3b82f6' : '#10b981';
             
             let htmlProductos = productos.map(d => {
-                totalFaltanteGlobal += d.faltante;
-                faltanteDinamica += d.faltante;
+                const p_falt = d.faltante || 0;
+                const pdv_falt = d.faltante_pdv || 0;
+                const p_act = d.actual || 0;
+                const p_met = d.meta || 0;
+                const pdv_act = d.actual_pdv || 0;
+                const pdv_met = d.meta_pdv || 0;
+                
+                totalFaltanteGlobal += p_falt;
+                faltanteDinamica += p_falt;
                 
                 const textoUnidad = d.unidad === 'Unds' ? 'Unidades Rotadas' : 'Ingresos';
                 
-                const colorInd = d.progreso >= 100 ? 'var(--success, #10b981)' : 'var(--primary, #3b82f6)';
-                const colorPdv = d.progreso_pdv >= 100 ? 'var(--success, #10b981)' : '#f59e0b';
+                const colorInd = (d.progreso || 0) >= 100 ? 'var(--success, #10b981)' : 'var(--primary, #3b82f6)';
+                const colorPdv = (d.progreso_pdv || 0) >= 100 ? 'var(--success, #10b981)' : '#f59e0b';
                 
                 return `
                     <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
@@ -525,30 +565,30 @@ async function cargarDinamicas() {
                         <div style="margin-bottom: 15px;">
                             <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px;">
                                 <span style="font-weight: 600; color: #475569;"><i class="fas fa-user"></i> Mi Progreso</span>
-                                <span style="color: ${d.faltante > 0 ? '#e11d48' : '#10b981'}; font-weight:bold;">
-                                    ${d.faltante > 0 ? 'Faltan ' + d.faltante.toLocaleString() + ' ' + textoUnidad : '¡Logrado!'}
+                                <span style="color: ${p_falt > 0 ? '#e11d48' : '#10b981'}; font-weight:bold;">
+                                    ${p_falt > 0 ? 'Faltan ' + p_falt.toLocaleString() + ' ' + textoUnidad : '¡Logrado!'}
                                 </span>
                             </div>
                             <div style="background: #e2e8f0; border-radius: 6px; height: 10px; overflow: hidden; width: 100%;">
-                                <div style="width: ${d.progreso}%; background: ${colorInd}; height: 100%; border-radius: 6px; transition: width 0.5s ease;"></div>
+                                <div style="width: ${d.progreso || 0}%; background: ${colorInd}; height: 100%; border-radius: 6px; transition: width 0.5s ease;"></div>
                             </div>
                             <div style="text-align: right; font-size: 0.75rem; color: #64748b; margin-top: 4px; font-weight: 600;">
-                                ${d.actual.toLocaleString()} / ${d.meta.toLocaleString()} ${textoUnidad} (${d.progreso.toFixed(1)}%)
+                                ${p_act.toLocaleString()} / ${p_met.toLocaleString()} ${textoUnidad} (${(d.progreso || 0).toFixed(1)}%)
                             </div>
                         </div>
 
                         <div>
                             <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px;">
                                 <span style="font-weight: 600; color: #475569;"><i class="fas fa-store"></i> Equipo Sucursal</span>
-                                <span style="color: ${d.faltante_pdv > 0 ? '#e11d48' : '#10b981'}; font-weight:bold;">
-                                    ${d.faltante_pdv > 0 ? 'Faltan ' + d.faltante_pdv.toLocaleString() + ' ' + textoUnidad : '¡Logrado!'}
+                                <span style="color: ${pdv_falt > 0 ? '#e11d48' : '#10b981'}; font-weight:bold;">
+                                    ${pdv_falt > 0 ? 'Faltan ' + pdv_falt.toLocaleString() + ' ' + textoUnidad : '¡Logrado!'}
                                 </span>
                             </div>
                             <div style="background: #e2e8f0; border-radius: 6px; height: 10px; overflow: hidden; width: 100%;">
-                                <div style="width: ${d.progreso_pdv}%; background: ${colorPdv}; height: 100%; border-radius: 6px; transition: width 0.5s ease;"></div>
+                                <div style="width: ${d.progreso_pdv || 0}%; background: ${colorPdv}; height: 100%; border-radius: 6px; transition: width 0.5s ease;"></div>
                             </div>
                             <div style="text-align: right; font-size: 0.75rem; color: #64748b; margin-top: 4px; font-weight: 600;">
-                                ${d.actual_pdv.toLocaleString()} / ${d.meta_pdv.toLocaleString()} ${textoUnidad} (${d.progreso_pdv.toFixed(1)}%)
+                                ${pdv_act.toLocaleString()} / ${pdv_met.toLocaleString()} ${textoUnidad} (${(d.progreso_pdv || 0).toFixed(1)}%)
                             </div>
                         </div>
                     </div>`;
