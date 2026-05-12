@@ -82,20 +82,20 @@
                     </div>
 
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
-                        
+    
                         <div style="position: relative;">
                             <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
-                            <input type="text" id="adminSearchEntidad" list="adminEntidadesList" oninput="aplicarFiltrosAdmin()" placeholder="Buscar o seleccionar..." style="width: 100%; padding: 12px 12px 12px 40px; border: 1px solid var(--border); border-radius: 8px; outline: none; font-family: inherit;">
+                            <input type="text" id="adminSearchEntidad" list="adminEntidadesList" oninput="aplicarFiltrosAdmin()" placeholder="Buscar o seleccionar..." style="width: 100%; box-sizing: border-box; padding: 12px 12px 12px 40px; border: 1px solid var(--border); border-radius: 8px; outline: none; font-family: inherit;">
                             <datalist id="adminEntidadesList"></datalist>
                         </div>
-
+                    
                         <div>
-                            <select id="adminSelectDinamica" onchange="aplicarFiltrosAdmin()" style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; outline: none; font-family: inherit; background: white;">
+                            <select id="adminSelectDinamica" onchange="aplicarFiltrosAdmin()" style="width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid var(--border); border-radius: 8px; outline: none; font-family: inherit; background: white;">
                                 <option value="TODAS">Todas las Dinámicas</option>
                             </select>
                         </div>
-
-                        <button onclick="limpiarFiltrosAdmin()" style="padding: 12px 20px; background: #fff1f2; color: #e11d48; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;">
+                    
+                        <button onclick="limpiarFiltrosAdmin()" style="width: 100%; box-sizing: border-box; padding: 12px 20px; background: #fff1f2; color: #e11d48; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;">
                             <i class="fas fa-eraser"></i> Limpiar Filtros
                         </button>
                     </div>
