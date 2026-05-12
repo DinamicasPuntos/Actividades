@@ -62,7 +62,6 @@ async function switchView(view) {
     showLoader();
 
     // 2. MAGIA: Pausar el código 50 milisegundos. 
-    // Esto no se nota, pero le da tiempo al navegador de "dibujar" el loader antes de congelarse cargando datos.
     await new Promise(resolve => setTimeout(resolve, 50));
 
     const tabs = { 
@@ -105,11 +104,12 @@ async function switchView(view) {
         await cargarDinamicas();
     }
 }
+
 // ========================================================
 // --- MÓDULO ADMIN: VISIÓN GLOBAL Y FILTROS ---
 // ========================================================
 let adminDataMaster = {};
-let adminSubVistaActual = 'coordinador'; // Inicia en coordinadores por defecto
+let adminSubVistaActual = 'nacional'; // El Admin inicia viendo la general del País por defecto
 
 async function cargarVisionAdmin() {
     showLoader();
@@ -126,23 +126,27 @@ async function cargarVisionAdmin() {
 
         adminDataMaster = await res.json();
         
-        // Disparamos la vista por defecto (Coordinadores)
-        cambiarSubVistaAdmin(adminSubVistaActual);
+        // Disparamos la vista por defecto
+        await cambiarSubVistaAdmin(adminSubVistaActual);
 
     } catch (e) {
         console.error(e);
         document.getElementById('containerAdmin').innerHTML = `<div style="text-align:center; color:#e11d48; padding: 2rem;">⚠️ ${e.message}</div>`;
         document.getElementById('totalGeneral').innerText = "Error";
-    } finally {
         hideLoader();
-    }
+    } 
+    // Nota: El hideLoader exitoso lo maneja cambiarSubVistaAdmin()
 }
 
-function cambiarSubVistaAdmin(nivel) {
+async function cambiarSubVistaAdmin(nivel) {
+    // Activamos el Loader para que haya feedback al cambiar sub-pestañas
+    showLoader();
+    await new Promise(resolve => setTimeout(resolve, 50));
+
     adminSubVistaActual = nivel;
     
-    // Cambiar visualmente las sub-pestañas (¡Se quitó 'pdv' de aquí!)
-    ['coordinador', 'supervisor'].forEach(n => {
+    // Cambiar visualmente las sub-pestañas
+    ['nacional', 'coordinador', 'supervisor'].forEach(n => {
         const btn = document.getElementById(`subtab-${n}`);
         if(btn) {
             btn.classList.remove('active');
@@ -172,6 +176,7 @@ function cambiarSubVistaAdmin(nivel) {
 
     // Limpiar inputs y renderizar
     limpiarFiltrosAdmin();
+    hideLoader(); // Ocultamos el Loader al finalizar
 }
 
 function limpiarFiltrosAdmin() {
@@ -190,7 +195,7 @@ function aplicarFiltrosAdmin() {
         return matchNombre && matchDin;
     });
 
-    // Agrupar por Entidad (Nombre del Coord, Sup o PDV)
+    // Agrupar por Entidad (Nacional, Coord o Sup)
     const agrupado = filtrados.reduce((acc, curr) => {
         if (!acc[curr.entidad]) acc[curr.entidad] = [];
         acc[curr.entidad].push(curr);
@@ -211,8 +216,10 @@ function renderizarVistaAdmin(agrupado) {
         return;
     }
 
+    // Icono dinámico según la vista activa
     let icon = "fa-users";
     if (adminSubVistaActual === 'coordinador') icon = "fa-user-tie";
+    else if (adminSubVistaActual === 'nacional') icon = "fa-flag";
 
     keys.forEach(entidad => {
         const dinámicas = agrupado[entidad];
