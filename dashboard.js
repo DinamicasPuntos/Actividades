@@ -210,8 +210,13 @@ function renderizarVistaAdmin(agrupado) {
         
         let htmlDinamicas = dinámicas.map(d => {
             const badgeColor = d.unidad === 'Unds' ? '#3b82f6' : '#10b981';
-            const textoUnidad = d.unidad === 'Unds' ? 'Unidades' : 'Ingresos';
-            const tipoStr = d.tipo_dinamica || "DINÁMICA"; // ADIÓS N/A
+            const textoUnidad = d.unidad === 'Unds' ? 'Unidades Rotadas' : 'Ingresos';
+            
+            // 💡 REGLA DE ORO PARA EL BADGE: Si no tiene tipo, o es genérico, forzamos la unidad real
+            let tipoStr = d.tipo_dinamica;
+            if (!tipoStr || tipoStr.toUpperCase() === "DINÁMICA" || tipoStr.toUpperCase() === "N/A") {
+                tipoStr = textoUnidad;
+            }
             
             // Si la vista activa es la ESPECIAL, dibujamos 3 barras
             if (adminSubVistaActual === 'especial') {
@@ -358,7 +363,11 @@ async function cargarEquiposLider() {
         data.dinamicas_lider.forEach(din => {
             const badgeColor = din.unidad === 'Unds' ? '#3b82f6' : '#10b981';
             const textoUnidad = din.unidad === 'Unds' ? 'Unidades Rotadas' : 'Ingresos';
-            const tipoStr = din.tipo_dinamica || "DINÁMICA"; // ADIÓS N/A
+            
+            let tipoStr = din.tipo_dinamica;
+            if (!tipoStr || tipoStr.toUpperCase() === "DINÁMICA" || tipoStr.toUpperCase() === "N/A") {
+                tipoStr = textoUnidad;
+            }
 
             let htmlSucursales = din.sucursales.map(suc => {
                 const s_falt = suc.faltante || 0;
@@ -526,8 +535,12 @@ async function cargarDinamicas() {
             let faltanteDinamica = 0;
             
             const textoUnidadGrupo = productos[0].unidad === 'Unds' ? 'Unidades Rotadas' : 'Ingresos';
-            const tipoStr = productos[0].tipo_dinamica || 'DINÁMICA'; // ADIÓS N/A
             const badgeColor = productos[0].unidad === 'Unds' ? '#3b82f6' : '#10b981';
+            
+            let tipoStr = productos[0].tipo_dinamica;
+            if (!tipoStr || tipoStr.toUpperCase() === "DINÁMICA" || tipoStr.toUpperCase() === "N/A") {
+                tipoStr = textoUnidadGrupo;
+            }
             
             let htmlProductos = productos.map(d => {
                 const p_falt = d.faltante || 0;
