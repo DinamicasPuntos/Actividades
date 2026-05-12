@@ -118,7 +118,10 @@ async function cargarEquiposLider() {
                 return `
                 <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                        <strong style="color: #1e293b;"><i class="fas fa-store-alt" style="color: var(--text-muted); margin-right: 5px;"></i> ${suc.nombre_pdv}</strong>
+                        <strong style="color: #1e293b;">
+                            <i class="fas fa-map-marker-alt" style="color: var(--text-muted); margin-right: 5px;"></i> 
+                            ${suc.nombre_pdv} 
+                        </strong>
                         <span style="color: ${suc.faltante > 0 ? '#e11d48' : '#10b981'}; font-weight: bold; font-size: 0.85rem;">
                             ${suc.faltante > 0 ? 'Faltan ' + suc.faltante.toLocaleString() + ' ' + textoUnidad : '¡Meta Cumplida!'}
                         </span>
