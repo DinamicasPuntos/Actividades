@@ -211,10 +211,8 @@ function renderizarVistaAdmin(agrupado) {
         return;
     }
 
-    // Icono dinámico según la vista
     let icon = "fa-users";
-    if (adminSubVistaActual === 'pdv') icon = "fa-store-alt";
-    else if (adminSubVistaActual === 'coordinador') icon = "fa-user-tie";
+    if (adminSubVistaActual === 'coordinador') icon = "fa-user-tie";
 
     keys.forEach(entidad => {
         const dinámicas = agrupado[entidad];
