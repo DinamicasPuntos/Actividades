@@ -19,26 +19,34 @@ window.onload = () => {
     const anio = ahora.getFullYear();
     document.getElementById('fechaFiltro').value = `${anio}-${mes}`;
 
-    // Mostramos Nombre y Cédula
     document.getElementById('userName').innerText = localStorage.getItem('nombre_usuario') || "Empleado";
     document.getElementById('userCedula').innerHTML = `<i class="fas fa-id-card"></i> C.C. ${localStorage.getItem('documento_usuario') || "Sin registro"}`;
     
-    // --- MAGIA DE LIDERAZGO CON IMPRESIÓN EN CONSOLA ---
-    const cargoBruto = localStorage.getItem('cargo_usuario');
-    const cargo = (cargoBruto || "").toUpperCase();
+    // --- LÓGICA DE PERMISOS JERÁRQUICOS ---
+    const cargo = (localStorage.getItem('cargo_usuario') || "").toUpperCase();
     
-    // 🕵️‍♂️ NUESTROS ESPÍAS:
-    console.log("=== REPORTE DE SESIÓN ===");
-    console.log("1. Cargo exacto guardado en memoria:", cargoBruto);
-    console.log("2. Cargo convertido a mayúsculas:", cargo);
-    console.log("3. ¿Tiene permiso de líder?:", cargo.includes("SUPERVISOR") || cargo.includes("COORDINADOR"));
-    console.log("=========================");
-    
+    // Referencias a los botones de navegación
+    const tabLideres = document.getElementById('tab-lideres');
+    const tabDinamicas = document.getElementById('tab-dinamicas');
+    const tabComisiones = document.getElementById('tab-comisiones');
+
     if (cargo.includes("SUPERVISOR") || cargo.includes("COORDINADOR")) {
-        document.getElementById('tab-lideres').classList.remove('hidden');
-        switchView('lideres'); 
+        // 1. Mostrar pestaña de líderes
+        tabLideres.classList.remove('hidden');
+        
+        // 2. Ocultar pestañas de vendedor (No participan en dinámicas)
+        tabDinamicas.classList.add('hidden');
+        tabComisiones.classList.add('hidden');
+        
+        // 3. Forzar entrada a la vista de equipos
+        switchView('lideres');
     } else {
-        switchView('dinamicas'); 
+        // Es un vendedor: ocultar visión de equipo y mostrar lo suyo
+        tabLideres.classList.add('hidden');
+        tabDinamicas.classList.remove('hidden');
+        tabComisiones.classList.remove('hidden');
+        
+        switchView('dinamicas');
     }
 };
 
