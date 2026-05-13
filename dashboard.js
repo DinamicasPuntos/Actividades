@@ -211,11 +211,11 @@ function renderizarVistaAdmin(agrupado) {
         let htmlDinamicas = dinámicas.map(d => {
             const badgeColor = d.unidad === 'Unds' ? '#3b82f6' : '#10b981';
             const textoUnidad = d.unidad === 'Unds' ? 'Unidades' : 'Ingresos';
+            const textoBadge = d.unidad === 'Unds' ? 'Unidades Rotadas' : 'Ingresos';
             
-            // 💡 REGLA DE ORO PARA EL BADGE - VISTA ADMIN
-            let tipoStr = (d.tipo_dinamica || "").trim();
+            let tipoStr = d.tipo_dinamica || "";
             if (!tipoStr || tipoStr.toUpperCase() === "DINÁMICA" || tipoStr.toUpperCase() === "N/A") {
-                tipoStr = d.unidad === 'Unds' ? 'UNIDADES ROTADAS' : 'INGRESOS';
+                tipoStr = textoBadge;
             }
             
             if (adminSubVistaActual === 'especial') {
@@ -232,6 +232,11 @@ function renderizarVistaAdmin(agrupado) {
                 const act_call = d.actual_call || 0, met_call = d.meta_call || 0, prog_call = d.progreso_call || 0;
                 const act_super = d.actual_super || 0, met_super = d.meta_super || 0, prog_super = d.progreso_super || 0;
 
+                // Conteo de Agentes
+                const conteoCall = d.conteo_call || 0;
+                const conteoSuper = d.conteo_super || 0;
+                const conteoTotal = conteoCall + conteoSuper;
+
                 return `
                 <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
@@ -241,7 +246,7 @@ function renderizarVistaAdmin(agrupado) {
                     
                     <div style="margin-bottom: 15px;">
                         <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px;">
-                            <span style="font-weight: 700; color: #334155;"><i class="fas fa-chart-pie" style="color: var(--primary);"></i> General (Ambos Canales)</span>
+                            <span style="font-weight: 700; color: #334155;"><i class="fas fa-chart-pie" style="color: var(--primary);"></i> General (${conteoTotal} Personas)</span>
                             <span style="color: ${f_gen > 0 ? '#e11d48' : '#10b981'}; font-weight:bold;">${msgGeneral}</span>
                         </div>
                         <div style="background: #f1f5f9; border-radius: 6px; height: 10px; overflow: hidden; width: 100%;">
@@ -254,7 +259,7 @@ function renderizarVistaAdmin(agrupado) {
 
                     <div style="margin-bottom: 12px; padding-left: 12px; border-left: 2px solid #e2e8f0;">
                         <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px;">
-                            <span style="font-weight: 600; color: #475569;"><i class="fas fa-headset" style="color: #f59e0b;"></i> Solo Call Centers</span>
+                            <span style="font-weight: 600; color: #475569;"><i class="fas fa-headset" style="color: #f59e0b;"></i> Call Centers (${conteoCall} Agentes)</span>
                             <span style="color: ${f_call > 0 ? '#e11d48' : '#10b981'}; font-weight:bold;">${msgCall}</span>
                         </div>
                         <div style="background: #f1f5f9; border-radius: 6px; height: 6px; overflow: hidden; width: 100%;">
@@ -267,7 +272,7 @@ function renderizarVistaAdmin(agrupado) {
 
                     <div style="padding-left: 12px; border-left: 2px solid #e2e8f0;">
                         <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px;">
-                            <span style="font-weight: 600; color: #475569;"><i class="fas fa-bolt" style="color: #8b5cf6;"></i> Solo Supernumerarios</span>
+                            <span style="font-weight: 600; color: #475569;"><i class="fas fa-bolt" style="color: #8b5cf6;"></i> Supernumerarios (${conteoSuper} Agentes)</span>
                             <span style="color: ${f_super > 0 ? '#e11d48' : '#10b981'}; font-weight:bold;">${msgSuper}</span>
                         </div>
                         <div style="background: #f1f5f9; border-radius: 6px; height: 6px; overflow: hidden; width: 100%;">
