@@ -499,7 +499,7 @@ async function cargarDinamicas() {
     showLoader();
     const token = localStorage.getItem('access_token');
     const fecha = document.getElementById('fechaFiltro').value;
-    console.log((localStorage.getItem('cargo_usuario') || "").toUpperCase().trim();)
+    console.log((localStorage.getItem('cargo usuario') || "Nada").toUpperCase().trim());
     // 💡 NUEVO: Verificamos si el usuario es de un canal especial (Call Center o Supernumerario)
     const cargo = (localStorage.getItem('cargo_usuario') || "").toUpperCase().trim();
     const esCargoEspecial = cargo.includes("CALL CENTER") || cargo.includes("SUPERNUMERARIO");
