@@ -501,6 +501,7 @@ async function cargarDinamicas() {
     const fecha = document.getElementById('fechaFiltro').value;
     // 💡 NUEVO: Verificamos si el usuario es de un canal especial (Call Center o Supernumerario)
     const cargo = (localStorage.getItem('cargo_usuario') || "Nada").toUpperCase().trim();
+    
     console.log(cargo)
     const esCargoEspecial = cargo.includes("CALL CENTER") || cargo.includes("SUPERNUMERARIO");
     
