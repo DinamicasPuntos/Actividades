@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
     <title>Panel de Control | Recolección de puntos</title>
-    <link rel="stylesheet" href="dashboard-style.css">
+    <link rel="stylesheet" href="dashboard-style.css?v=20260930-1">
+    <link rel="stylesheet" href="design.css?v=20260930-1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -17,19 +18,30 @@
     <div class="dashboard-wrapper">
         <header class="top-bar">
             <div class="brand">
-                <div class="logo-icon"><i class="fas fa-chart-line"></i></div>
-                <h1><span>Seguimiento de actividades</span></h1>
+                <div class="logo-icon" aria-hidden="true">↗</div>
+                <div><h1>Dinámicas<span class="brand-dot">.</span></h1><span class="brand-caption">Tu portal de resultados</span></div>
             </div>
             <div class="user-profile">
+                <button id="notificacionesDesplegar" class="notificaciones-acceso" type="button" aria-expanded="false" aria-controls="muroNotificaciones" aria-haspopup="dialog">
+                    <span id="notificacionesAlternarTexto">Notificaciones</span>
+                    <span id="notificacionesContador" class="notificaciones-contador" aria-live="polite">Revisando</span>
+                </button>
+
                 <div class="user-info">
                     <strong id="userName" title="Nombre del Empleado">Cargando...</strong>
                     <span id="userCedula" style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500;"><i class="fas fa-id-card"></i> C.C. Cargando...</span>
                 </div>
-                <button onclick="logout()" class="logout-pill"><i class="fas fa-sign-out-alt"></i></button>
+                <button onclick="logout()" class="logout-pill" aria-label="Cerrar sesión" title="Cerrar sesión"><span>Salir</span></button>
             </div>
         </header>
 
         <main class="dashboard-body">
+            <section class="page-intro">
+                <div><p class="eyebrow">PANEL DE CONTROL</p><h2>Resumen de dinámicas</h2>
+                <p>Consulta las metas, la rotación por producto y los resultados de tu equipo.</p></div>
+            </section>
+
+            <p id="estadoConexion" class="estado-conexion" role="status" hidden></p>
 
             <div class="carousel-container" id="bannerCarousel">
                 <div class="carousel-slides" id="carouselSlides">
@@ -68,7 +80,7 @@
                 <div class="stat-card">
                     <span class="stat-label" id="secondaryLabel">Periodo de Análisis</span>
                     <div class="stat-value small">
-                        <input type="month" id="fechaFiltro" onchange="cargarDinamicasConFiltro()" class="date-input">
+                        <input type="month" id="fechaFiltro" aria-labelledby="secondaryLabel" onchange="cargarDinamicasConFiltro()" class="date-input">
                     </div>
                 </div>
             </section>
@@ -77,23 +89,23 @@
                 
                 <div id="view-admin" class="view-section hidden" style="padding: 20px;">
                     
-                    <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <div class="admin-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
                         <button class="tab-btn active" id="subtab-nacional" onclick="cambiarSubVistaAdmin('nacional')" style="flex: 1; min-width: 140px;">Vista Nacional</button>
                         <button class="tab-btn" id="subtab-coordinador" onclick="cambiarSubVistaAdmin('coordinador')" style="flex: 1; min-width: 140px;">Coordinaciones</button>
                         <button class="tab-btn" id="subtab-supervisor" onclick="cambiarSubVistaAdmin('supervisor')" style="flex: 1; min-width: 140px;">Supervisiones</button>
                         <button class="tab-btn" id="subtab-especial" onclick="cambiarSubVistaAdmin('especial')" style="flex: 1; min-width: 140px;">Callcenter y Supernum.</button>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
+                    <div class="filter-panel" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
     
                         <div style="position: relative;">
                             <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
-                            <input type="text" id="adminSearchEntidad" list="adminEntidadesList" oninput="aplicarFiltrosAdmin()" placeholder="Buscar o seleccionar..." style="width: 100%; box-sizing: border-box; padding: 12px 12px 12px 40px; border: 1px solid var(--border); border-radius: 8px; outline: none; font-family: inherit;">
+                            <input type="text" id="adminSearchEntidad" aria-label="Buscar equipo" list="adminEntidadesList" oninput="aplicarFiltrosAdmin()" placeholder="Buscar equipo..." style="width: 100%; box-sizing: border-box; padding: 12px 12px 12px 40px; border: 1px solid var(--border); border-radius: 8px; outline: none; font-family: inherit;">
                             <datalist id="adminEntidadesList"></datalist>
                         </div>
                     
                         <div>
-                            <select id="adminSelectDinamica" onchange="aplicarFiltrosAdmin()" style="width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid var(--border); border-radius: 8px; outline: none; font-family: inherit; background: white;">
+                            <select id="adminSelectDinamica" aria-label="Filtrar dinámica" onchange="aplicarFiltrosAdmin()" style="width: 100%; box-sizing: border-box; padding: 12px; border: 1px solid var(--border); border-radius: 8px; outline: none; font-family: inherit; background: white;">
                                 <option value="TODAS">Todas las Dinámicas</option>
                             </select>
                         </div>
@@ -137,6 +149,30 @@
             </div>
         </main>
     </div>
-    <script src="dashboard.js"></script>
+    <dialog id="muroNotificaciones" class="notificaciones-muro notificaciones-lateral" aria-labelledby="notificacionesTitulo">
+        <header class="notificaciones-lateral-header">
+            <div><span class="eyebrow">TU PERFIL</span><h2 id="notificacionesTitulo">Notificaciones</h2></div>
+            <button id="notificacionesCerrarPanel" type="button" aria-label="Cerrar notificaciones">&#215;</button>
+        </header>
+                <div id="notificacionesContenido" hidden>
+                <div class="notificaciones-herramientas">
+                    <button id="notificacionesActualizar" type="button">Actualizar</button>
+                    <button id="notificacionesFiltro" type="button">Solo sin leer</button>
+                    <button id="notificacionesLeerTodas" type="button" disabled>Marcar todas como leídas</button>
+                </div>
+                <p id="notificacionesEstado" class="notificaciones-estado" role="status">Revisando tus dinámicas…</p>
+                <div id="notificacionesLista" class="notificaciones-lista"></div>
+                <button id="notificacionesVerTodas" class="notificaciones-ver-todas" type="button" hidden>Ver todos los mensajes</button>
+                </div>
+    </dialog>
+    <aside id="notificacionesAviso" class="notificaciones-aviso" aria-label="Aviso de dinámicas" hidden>
+        <button id="notificacionesCerrarAviso" type="button" aria-label="Cerrar aviso">×</button>
+        <strong>¡Cada paso te acerca a la meta!</strong>
+        <p id="notificacionesAvisoTexto" role="status"></p>
+        <button id="notificacionesAbrirMuro" type="button">Ver mis mensajes</button>
+    </aside>
+    <script src="participantes.js?v=20260930-1"></script>
+    <script src="notificaciones.js?v=20260930-1"></script>
+    <script src="dashboard.js?v=20260930-1"></script>
 </body>
 </html>

@@ -4,6 +4,11 @@ const API_URL = "https://vague-monika-preimportantly.ngrok-free.dev";
 if (localStorage.getItem('access_token')) {
     window.location.href = 'dashboard.html';
 }
+if (new URLSearchParams(location.search).get('sesion') === 'renovar') {
+    const mensaje = document.getElementById('mensaje');
+    mensaje.textContent = 'Tu sesión anterior venció. Ingresa nuevamente para cargar tus datos reales.';
+    mensaje.style.display = 'block';
+}
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();

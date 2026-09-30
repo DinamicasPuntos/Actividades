@@ -1,14 +1,97 @@
 :root {
-    --primary: #00acec;
-    --success: #adc948;
-    --text-main: #1e293b;
-    --text-muted: #64748b;
-    --bg-body: #f1f5f9;
+    --primary: #087e8b;
+    --success: #168362;
+    --text-main: #172e40;
+    --text-muted: #607382;
+    --bg-body: #f4f7f9;
     --white: #ffffff;
-    --border: #e2e8f0;
+    --border: #e0e8ed;
+    --border-color: var(--border);
+}
+
+/* Participantes de cada dinámica: nacional, coordinaciones y supervisiones. */
+.dinamica-participantes {
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    color: #334155;
+    font-size: 0.82rem;
+    min-width: 0;
+}
+.participantes-encabezado, .participantes-alcance {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-weight: 600;
+}
+.participantes-alcance { margin-bottom: 10px; }
+.participantes-alcance:last-child { margin-bottom: 0; }
+.participantes-alcance strong { overflow-wrap: anywhere; }
+.participantes-cantidad { background: #e0f2fe; color: #075985; border-radius: 20px; padding: 1px 7px; }
+.participantes-etiqueta { border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; }
+.participantes-etiqueta--marca { background: #ede9fe; color: #5b21b6; }
+.participantes-etiqueta--familia { background: #fef3c7; color: #92400e; }
+.participantes-etiqueta--laboratorio { background: #dcfce7; color: #166534; }
+.participantes-lista { display: flex; flex-wrap: wrap; gap: 7px; list-style: none; padding: 0; margin: 9px 0 0; }
+.participante-producto {
+    display: flex; flex-direction: column; gap: 3px;
+    max-width: 100%; box-sizing: border-box; overflow-wrap: anywhere;
+    border: 1px solid #dbe5ef; background: white; border-radius: 7px; padding: 6px 9px;
+}
+.participante-codigo { color: #64748b; font-size: 0.72rem; }
+.participantes-desplegable { margin-top: 10px; }
+.participantes-desplegable summary { color: #0369a1; cursor: pointer; font-weight: 600; width: fit-content; }
+.participantes-desplegable summary:focus-visible { outline: 2px solid #0284c7; outline-offset: 4px; border-radius: 3px; }
+.participantes-ver-menos, .participantes-desplegable[open] .participantes-ver-mas { display: none; }
+.participantes-desplegable[open] .participantes-ver-menos { display: inline; }
+.participantes-pendientes { color: #64748b; margin: 0; }
+@media (max-width: 600px) {
+    .dinamica-participantes { padding: 10px; }
+    .participantes-lista { flex-direction: column; }
+    .participante-producto { width: 100%; }
 }
 
 body { background-color: var(--bg-body); font-family: 'Inter', sans-serif; margin: 0; }
+
+/* Muro automático de alertas del perfil. */
+.notificaciones-muro { margin-bottom: 24px; padding: 22px; border: 1px solid var(--border); border-radius: 16px; background: white; scroll-margin-top: 110px; }
+.notificaciones-header { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+.notificaciones-header h2 { color: var(--text-main); font-size: 1.15rem; margin: 0 0 7px; }
+.notificaciones-header p, .notificaciones-estado { color: var(--text-muted); font-size: 0.8rem; line-height: 1.5; margin: 0; }
+.notificaciones-contador { flex-shrink: 0; border-radius: 20px; background: #fff1f2; color: #be123c; padding: 6px 10px; font-size: 0.8rem; font-weight: 700; }
+.notificaciones-contador.sin-alertas { background: #ecfdf5; color: #047857; }
+.notificaciones-herramientas { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 10px; }
+.notificaciones-muro button, .notificaciones-aviso button { font: inherit; font-size: 0.8rem; cursor: pointer; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 11px; color: #334155; background: white; }
+.notificaciones-muro button:hover:not(:disabled) { border-color: #0284c7; color: #0369a1; background: #f0f9ff; }
+.notificaciones-muro button:focus-visible, .notificaciones-aviso button:focus-visible { outline: 2px solid #0284c7; outline-offset: 3px; }
+.notificaciones-muro button:disabled { color: #94a3b8; cursor: default; }
+.notificaciones-lista { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 12px; margin-top: 14px; }
+.notificacion { border: 1px solid #e2e8f0; border-left: 4px solid #e11d48; border-radius: 10px; padding: 16px; min-width: 0; color: #334155; background: #fff; }
+.notificacion--atencion { border-left-color: #d97706; }
+.notificacion--leida { background: #f8fafc; }
+.notificacion-cabecera { display: flex; justify-content: space-between; gap: 10px; font-size: 0.72rem; font-weight: 700; }
+.notificacion-nivel { color: #be123c; background: #fff1f2; border-radius: 5px; padding: 3px 7px; }
+.notificacion--atencion .notificacion-nivel { color: #92400e; background: #fffbeb; }
+.notificacion-lectura { color: #64748b; }
+.notificacion h3 { font-size: 0.95rem; line-height: 1.4; margin: 12px 0 4px; overflow-wrap: anywhere; }
+.notificacion p { line-height: 1.6; font-size: 0.83rem; margin: 8px 0; overflow-wrap: anywhere; }
+.notificacion .notificacion-entidad, .notificacion .notificacion-cierre { color: #64748b; font-size: 0.76rem; }
+.notificacion-acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.notificaciones-vacio { padding: 18px; margin: 0; background: #f8fafc; border-radius: 10px; color: #475569; font-size: 0.88rem; }
+.notificaciones-ver-todas { margin-top: 14px; }
+.notificaciones-aviso { position: fixed; z-index: 1100; bottom: 24px; right: 24px; max-width: 360px; padding: 22px; border: 1px solid #fecdd3; border-left: 5px solid #e11d48; background: white; color: #334155; border-radius: 12px; box-shadow: 0 12px 40px #0f172a26; box-sizing: border-box; }
+.notificaciones-aviso[hidden] { display: none; }
+.notificaciones-aviso strong { display: block; font-size: 0.95rem; padding-right: 16px; }
+.notificaciones-aviso p { font-size: 0.85rem; line-height: 1.6; }
+#notificacionesCerrarAviso { position: absolute; top: 5px; right: 6px; border: 0; font-size: 1.3rem; padding: 3px 8px; }
+@media (max-width: 600px) {
+    .notificaciones-muro { padding: 14px; scroll-margin-top: 180px; }
+    .notificaciones-header { flex-direction: column; gap: 8px; }
+    .notificaciones-aviso { right: 12px; left: 12px; bottom: 12px; max-width: none; }
+}
 
 /* Loader Overlay */
 .loader-overlay {
@@ -286,4 +369,32 @@ body { background-color: var(--bg-body); font-family: 'Inter', sans-serif; margi
         align-items: flex-start; /* Alineamos a la izquierda en móviles */
         width: calc(100% - 60px); /* Deja espacio para el botón de salir */
     }
+}
+
+/* Barra plegable y mensajes para acompa?ar el avance. */
+.notificaciones-muro { padding: 0; overflow: hidden; }
+.notificaciones-barra-titulo { margin: 0; font-size: 1rem; }
+.notificaciones-muro .notificaciones-barra { display: flex; align-items: center; gap: 12px; width: 100%; padding: 16px 20px; border: 0; border-radius: 0; background: #eff6ff; text-align: left; color: #164e63; }
+#notificacionesTitulo { font-size: 1rem; font-weight: 700; margin-right: auto; }
+#notificacionesAlternarTexto { font-weight: 600; }
+#notificacionesContenido { padding: 0 20px 20px; }
+#notificacionesContenido[hidden] { display: none; }
+.notificaciones-contador { background: #dbeafe; color: #1e40af; }
+.notificacion, .notificacion--atencion { border-left-color: #0d9488; }
+.notificacion-nivel, .notificacion--atencion .notificacion-nivel { color: #0f766e; background: #ccfbf1; }
+.notificaciones-aviso { border-color: #99f6e4; border-left-color: #0d9488; }
+.rotacion-productos { margin: 12px 0; border: 1px solid #cbd5e1; border-radius: 10px; background: white; overflow: hidden; }
+.rotacion-productos summary { cursor: pointer; padding: 12px; font-weight: 600; color: #0369a1; font-size: .85rem; }
+.rotacion-productos summary:focus-visible { outline: 2px solid #0284c7; outline-offset: -3px; }
+.rotacion-productos table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: .82rem; }
+.rotacion-productos caption { text-align: left; padding: 8px 12px; color: #64748b; font-size: .75rem; }
+.rotacion-productos th, .rotacion-productos td { padding: 10px 12px; border-top: 1px solid #e2e8f0; text-align: left; overflow-wrap: anywhere; }
+.rotacion-productos th:last-child, .rotacion-productos td:last-child { text-align: right; width: 30%; font-variant-numeric: tabular-nums; }
+.rotacion-productos td:last-child { color: #0f766e; font-weight: 700; }
+.rotacion-productos small { display: block; color: #64748b; margin-top: 4px; }
+@media (max-width: 600px) {
+    .notificaciones-muro .notificaciones-barra { flex-wrap: wrap; padding: 14px; gap: 10px; }
+    #notificacionesTitulo { flex-basis: 100%; }
+    #notificacionesAlternarTexto { margin-left: auto; }
+    #notificacionesContenido { padding: 0 12px 12px; }
 }

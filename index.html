@@ -3,42 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso | Sistema de Dinámicas</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="script.js" defer></script>
+    <title>Bienvenido | Dinámicas</title>
+    <link rel="stylesheet" href="style.css?v=20260930-1">
+    <script src="script.js?v=20260930-1" defer></script>
 </head>
 <body>
-    <div class="background-overlay"></div>
-    <div class="login-container">
-        <div class="login-card">
-            <div class="header-icon">
-                <i class="fas fa-shield-halved"></i>
+    <main class="login-layout">
+        <section class="login-story" aria-labelledby="storyTitle">
+            <div class="login-brand"><span class="brand-symbol" aria-hidden="true">↗</span> Dinámicas<span class="brand-dot">.</span></div>
+            <div class="story-content">
+                <p class="eyebrow">SEGUIMIENTO COMERCIAL</p>
+                <h1 id="storyTitle">Dinámicas y<br>resultados,<br><em>en un solo lugar.</em></h1>
+                <p class="story-description">Consulta el avance de las dinámicas, la rotación de productos y los resultados de cada equipo.</p>
+                <div class="journey"><span>Productos</span><b aria-hidden="true">·</b><span>Metas</span><b aria-hidden="true">·</b><span>Resultados</span></div>
             </div>
-            <h2>Bienvenido</h2>
-            <p>Portal de Dinámicas</p>
-            
-            <form id="loginForm">
-                <div class="input-group">
-                    <i class="fas fa-user"></i>
-                    <input type="text" id="codigo" placeholder="Código de Empleado" required>
-                </div>
-                <div class="input-group">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="documento" placeholder="N° de Identidad" required>
-                </div>
-                <button type="submit" id="btnLogin">
-                    <span>Ingresar</span>
-                    <i class="fas fa-arrow-right"></i>
-                </button>
-            </form>
-            <div id="mensaje" class="error-msg"></div>
-        </div>
-    </div>
+            <p class="story-footer">Portal de seguimiento de actividades comerciales</p>
+        </section>
+        <section class="login-access" aria-labelledby="accessTitle">
+            <div class="login-card">
+                <span class="access-tag">TU ESPACIO DE RESULTADOS</span>
+                <h2 id="accessTitle">Iniciar sesión</h2>
+                <p class="access-description">Ingresa tus datos para consultar la información de tu perfil.</p>
+                <form id="loginForm">
+                    <label for="codigo">Código de empleado</label>
+                    <div class="input-group"><input type="text" id="codigo" placeholder="Ingresa tu código" autocomplete="username" required></div>
+                    <label for="documento">Número de identidad</label>
+                    <div class="input-group"><input type="password" id="documento" placeholder="Ingresa tu número de identidad" autocomplete="current-password" required></div>
+                    <button type="submit" id="btnLogin">Ingresar al portal <span aria-hidden="true">↗</span></button>
+                    <div id="mensaje" class="error-msg" role="alert"></div>
+                </form>
+                <p class="login-note">Tus dinámicas y resultados, según tu perfil.</p>
+            </div>
+            <p class="access-footer">Portal de seguimiento de actividades</p>
+        </section>
+    </main>
 </body>
 </html>
-<audio> </audio>
-<footer>
-    <data>
-
-    </data>

@@ -5,7 +5,8 @@ const API_URL = "https://vague-monika-preimportantly.ngrok-free.dev";
 function showLoader() { document.getElementById('loader').classList.add('active'); }
 function hideLoader() { document.getElementById('loader').classList.remove('active'); }
 
-window.onload = () => {
+window.onload = async () => {
+    if (globalThis.PrepararSesionLocal && !await globalThis.PrepararSesionLocal()) return;
     cargarBanners();
 
     const token = localStorage.getItem('access_token');
@@ -24,6 +25,8 @@ window.onload = () => {
     
     // --- LÓGICA DE PERMISOS JERÁRQUICOS (3 NIVELES) ---
     const cargo = (localStorage.getItem('cargo_usuario') || "").toUpperCase().trim();
+    try { NotificacionesUI.iniciar({ apiUrl: API_URL, verDinamica: verDinamicaNotificada }); }
+    catch (error) { console.error('No se pudieron iniciar las notificaciones:', error); }
     
     const tabAdmin = document.getElementById('tab-admin');
     const tabLideres = document.getElementById('tab-lideres');
@@ -114,13 +117,23 @@ async function cargarVisionAdmin() {
         });
         
         if (res.status === 401) return logout();
-        if (!res.ok) throw new Error("Error cargando panel gerencial");
+        if (!res.ok) {
+            const error = await res.json().catch(() => ({}));
+            throw new Error(error.detail || 'No se pudo consultar la información real. Intenta actualizar la vista.');
+        }
 
         adminDataMaster = await res.json();
-        cambiarSubVistaAdmin(adminSubVistaActual);
+        await cambiarSubVistaAdmin(adminSubVistaActual);
+        const estado = document.getElementById('estadoConexion');
+        if (estado) {
+            estado.hidden = false;
+            estado.textContent = `Consulta completada · ${fecha} · ${(adminDataMaster.por_nacional || []).length} dinámicas en la vista nacional`;
+        }
 
     } catch (e) {
         console.error(e);
+        const estado = document.getElementById('estadoConexion');
+        if (estado) { estado.hidden = false; estado.textContent = e.message; }
         document.getElementById('containerAdmin').innerHTML = `<div style="text-align:center; color:#e11d48; padding: 2rem;">⚠️ ${e.message}</div>`;
         document.getElementById('totalGeneral').innerText = "Error";
         hideLoader();
@@ -144,13 +157,14 @@ function cambiarSubVistaAdmin(nivel) {
         tabActiva.classList.add('active');
     }
 
-    requestAnimationFrame(() => {
+    return new Promise(resolve => requestAnimationFrame(() => {
         setTimeout(() => {
             adminSubVistaActual = nivel;
             const dataActual = adminDataMaster[`por_${nivel}`] || [];
 
             const dinSet = new Set(dataActual.map(d => d.dinamica));
             const selectDin = document.getElementById('adminSelectDinamica');
+            const seleccionAnterior = selectDin.value;
             selectDin.innerHTML = `<option value="TODAS">Todas las Dinámicas</option>` + 
                 [...dinSet].map(d => `<option value="${d}">${d}</option>`).join('');
 
@@ -158,10 +172,14 @@ function cambiarSubVistaAdmin(nivel) {
             const dataList = document.getElementById('adminEntidadesList');
             dataList.innerHTML = [...entSet].map(e => `<option value="${e}"></option>`).join('');
 
-            limpiarFiltrosAdmin();
-            hideLoader(); 
-        }, 50); 
-    });
+            selectDin.value = dinSet.has(seleccionAnterior) ? seleccionAnterior : 'TODAS';
+            document.getElementById('adminSearchEntidad').value = '';
+            document.getElementById('adminSearchEntidad').placeholder = nivel === 'coordinador' ? 'Buscar región...' : nivel === 'supervisor' ? 'Buscar zona...' : 'Buscar equipo...';
+            aplicarFiltrosAdmin();
+            hideLoader();
+            resolve();
+        }, 50);
+    }));
 }
 
 function limpiarFiltrosAdmin() {
@@ -192,6 +210,9 @@ function aplicarFiltrosAdmin() {
 function renderizarVistaAdmin(agrupado) {
     const container = document.getElementById('containerAdmin');
     container.innerHTML = "";
+    const dinamicaUnica = document.getElementById('adminSelectDinamica').value !== 'TODAS';
+    const tarjetasDirectas = dinamicaUnica || adminSubVistaActual === 'nacional';
+    container.classList.toggle('resultados-por-equipo', tarjetasDirectas);
 
     const keys = Object.keys(agrupado);
     if (keys.length === 0) {
@@ -209,7 +230,7 @@ function renderizarVistaAdmin(agrupado) {
         const dinámicas = agrupado[entidad];
         
         let htmlDinamicas = dinámicas.map(d => {
-            const badgeColor = d.unidad === 'Unds' ? '#3b82f6' : '#10b981';
+            const badgeColor = d.unidad === 'Unds' ? '#087e8b' : '#10b981';
             const textoUnidad = d.unidad === 'Unds' ? 'Unidades' : 'Ingresos';
             const textoBadge = d.unidad === 'Unds' ? 'Unidades Rotadas' : 'Ingresos';
             
@@ -238,19 +259,20 @@ function renderizarVistaAdmin(agrupado) {
                 const conteoTotal = conteoCall + conteoSuper;
 
                 return `
-                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                <div class="dynamic-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
                         <strong style="color: #1e293b; font-size: 1.1rem;">${d.dinamica || "Dinámica"}</strong>
                         <span style="background: ${badgeColor}20; color: ${badgeColor}; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 0.75rem;">${tipoStr.toUpperCase()}</span>
                     </div>
                     
+                    ${ParticipantesDinamica.renderizar(d)}
                     <div style="margin-bottom: 15px;">
                         <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px;">
                             <span style="font-weight: 700; color: #334155;"><i class="fas fa-chart-pie" style="color: var(--primary);"></i> General (${conteoTotal} Personas)</span>
                             <span style="color: ${f_gen > 0 ? '#e11d48' : '#10b981'}; font-weight:bold;">${msgGeneral}</span>
                         </div>
                         <div style="background: #f1f5f9; border-radius: 6px; height: 10px; overflow: hidden; width: 100%;">
-                            <div style="width: ${prog_gen}%; background: ${prog_gen >= 100 ? '#10b981' : '#00acec'}; height: 100%; transition: width 0.8s ease;"></div>
+                            <div style="width: ${prog_gen}%; background: ${prog_gen >= 100 ? '#10b981' : '#168e94'}; height: 100%; transition: width 0.8s ease;"></div>
                         </div>
                         <div style="text-align: right; font-size: 0.75rem; color: #64748b; margin-top: 4px; font-weight: 600;">
                             ${act_gen.toLocaleString()} / ${met_gen.toLocaleString()} (${prog_gen.toFixed(1)}%)
@@ -291,15 +313,16 @@ function renderizarVistaAdmin(agrupado) {
                 const p_norm = d.progreso || 0;
 
                 return `
-                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                <div class="dynamic-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
                         <strong style="color: #1e293b;">${d.dinamica || "Dinámica"}</strong>
                         <span style="color: ${f_norm > 0 ? '#e11d48' : '#10b981'}; font-weight: bold; font-size: 0.85rem;">
                             ${f_norm > 0 ? 'Faltan ' + f_norm.toLocaleString() + ' ' + textoUnidad : '¡Logrado!'}
                         </span>
                     </div>
+                    ${ParticipantesDinamica.renderizar(d)}
                     <div style="background: #f1f5f9; border-radius: 8px; height: 10px; overflow: hidden; width: 100%;">
-                        <div style="width: ${p_norm}%; background: ${p_norm >= 100 ? '#10b981' : '#00acec'}; height: 100%; transition: width 0.8s ease;"></div>
+                        <div style="width: ${p_norm}%; background: ${p_norm >= 100 ? '#10b981' : '#168e94'}; height: 100%; transition: width 0.8s ease;"></div>
                     </div>
                     <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-top: 8px;">
                         <span style="background: ${badgeColor}20; color: ${badgeColor}; padding: 2px 8px; border-radius: 8px; font-weight: 700;">${tipoStr.toUpperCase()}</span>
@@ -309,11 +332,31 @@ function renderizarVistaAdmin(agrupado) {
             }
         }).join('');
 
+        if (adminSubVistaActual === 'nacional' && !dinamicaUnica) {
+            container.insertAdjacentHTML('beforeend', htmlDinamicas);
+            return;
+        }
+        if (dinamicaUnica) {
+            const tarjeta = document.createElement('section');
+            tarjeta.className = 'resultado-equipo';
+            const encabezado = document.createElement('header');
+            encabezado.className = 'resultado-equipo-titulo';
+            const etiqueta = document.createElement('span');
+            etiqueta.textContent = adminSubVistaActual === 'coordinador' ? 'Coordinación · Región' : adminSubVistaActual === 'supervisor' ? 'Supervisión · Zona' : 'Resultados';
+            const nombre = document.createElement('h3');
+            nombre.textContent = entidad;
+            encabezado.append(etiqueta, nombre);
+            tarjeta.append(encabezado);
+            tarjeta.insertAdjacentHTML('beforeend', htmlDinamicas);
+            container.append(tarjeta);
+            return;
+        }
+
         container.innerHTML += `
             <div class="accordion-item">
-                <div class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
+                <div class="accordion-header" role="button" tabindex="0" aria-expanded="false" onclick="alternarAcordeon(this)" onkeydown="tecladoAcordeon(event, this)">
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <i class="fas fa-chevron-down acc-icon"></i>
+                        <span class="acc-icon" aria-hidden="true">&#8964;</span>
                         <strong style="font-size: 1.1rem; color: var(--text-main);"><i class="fas ${icon}" style="color: var(--primary); margin-right: 5px;"></i> ${entidad}</strong>
                     </div>
                     <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
@@ -326,7 +369,8 @@ function renderizarVistaAdmin(agrupado) {
             </div>`;
     });
 
-    document.getElementById('totalGeneral').innerText = `${keys.length} Registros`;
+    const totalDinamicas = new Set(Object.values(agrupado).flat().map(d => d.dinamica)).size;
+    document.getElementById('totalGeneral').innerText = `${totalDinamicas} ${totalDinamicas === 1 ? 'dinámica' : 'dinámicas'}`;
 }
 
 // ========================================================
@@ -364,7 +408,8 @@ async function cargarEquiposLider() {
         }
 
         data.dinamicas_lider.forEach(din => {
-            const badgeColor = din.unidad === 'Unds' ? '#3b82f6' : '#10b981';
+            const productoUnico = ParticipantesDinamica.normalizar(din).productos.length === 1;
+            const badgeColor = din.unidad === 'Unds' ? '#087e8b' : '#10b981';
             const textoUnidad = din.unidad === 'Unds' ? 'Unidades Rotadas' : 'Ingresos';
             
             // 💡 REGLA DE ORO PARA EL BADGE - VISTA LÍDERES
@@ -380,7 +425,7 @@ async function cargarEquiposLider() {
                 const s_prog = suc.progreso || 0;
 
                 return `
-                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                <div class="dynamic-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
                         <strong style="color: #1e293b;">
                             <i class="fas fa-map-marker-alt" style="color: var(--text-muted); margin-right: 5px;"></i> 
@@ -391,19 +436,20 @@ async function cargarEquiposLider() {
                         </span>
                     </div>
                     <div style="background: #f1f5f9; border-radius: 8px; height: 10px; overflow: hidden; width: 100%;">
-                        <div style="width: ${s_prog}%; background: ${s_prog >= 100 ? '#10b981' : '#00acec'}; height: 100%; transition: width 0.8s ease;"></div>
+                        <div style="width: ${s_prog}%; background: ${s_prog >= 100 ? '#10b981' : '#168e94'}; height: 100%; transition: width 0.8s ease;"></div>
                     </div>
                     <div style="text-align: right; font-size: 0.75rem; color: #64748b; margin-top: 6px; font-weight: 600;">
                         ${s_act.toLocaleString()} / ${s_met.toLocaleString()} (${s_prog.toFixed(1)}%)
                     </div>
+                    ${ParticipantesDinamica.renderizarRotacion({...suc, alcance: din.alcance, unidad: din.unidad})}
                 </div>`;
             }).join('');
 
             container.innerHTML += `
-                <div class="accordion-item">
-                    <div class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
+                <div class="accordion-item ${productoUnico ? 'accordion-item--directa active' : ''}">
+                    <div class="accordion-header" ${productoUnico ? '' : 'role="button" tabindex="0" onclick="alternarAcordeon(this)" onkeydown="tecladoAcordeon(event, this)" aria-expanded="false"'}>
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <i class="fas fa-chevron-down acc-icon"></i>
+                            <span class="acc-icon" aria-hidden="true">&#8964;</span>
                             <strong style="font-size: 1.1rem; color: var(--text-main);">${din.nombre}</strong>
                             <span style="background: ${badgeColor}20; color: ${badgeColor}; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">${tipoStr.toUpperCase()}</span>
                         </div>
@@ -412,6 +458,7 @@ async function cargarEquiposLider() {
                         </div>
                     </div>
                     <div class="accordion-content" style="padding: 15px; background: #f8fafc;">
+                        ${ParticipantesDinamica.renderizarAlcance(din)}
                         ${htmlSucursales}
                     </div>
                 </div>`;
@@ -458,7 +505,34 @@ async function cargarComisiones() {
         tbody.innerHTML = "";
 
         if(!data.comisiones || data.comisiones.length === 0){
-            tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:var(--text-muted)">No obtuviste puntos en este periodo.</td></tr>`;
+            const fila = tbody.insertRow();
+            const celda = fila.insertCell();
+            celda.colSpan = 2;
+            celda.className = 'puntos-vacios';
+            const mensaje = document.createElement('p');
+            mensaje.textContent = 'No hay puntos liquidados para tu cuenta en el período seleccionado.';
+            celda.append(mensaje);
+            const periodos = (data.periodos_disponibles || []).filter(p => /^\d{4}-(0[1-9]|1[0-2])$/.test(p));
+            if (periodos.length) {
+                const ayuda = document.createElement('p');
+                ayuda.textContent = 'Tienes liquidaciones en estos períodos:';
+                celda.append(ayuda);
+                const botones = document.createElement('div');
+                botones.className = 'puntos-periodos';
+                for (const periodo of periodos) {
+                    const boton = document.createElement('button');
+                    boton.type = 'button';
+                    boton.textContent = new Date(`${periodo}-01T12:00:00`).toLocaleDateString('es-CO', {month:'long', year:'numeric'});
+                    boton.dataset.periodo = periodo;
+                    boton.addEventListener('click', () => {
+                        document.getElementById('fechaFiltro').value = periodo;
+                        NotificacionesUI.actualizar();
+                        cargarComisiones();
+                    });
+                    botones.append(boton);
+                }
+                celda.append(botones);
+            }
         } else {
             const comisionesAgrupadas = {};
 
@@ -541,10 +615,11 @@ async function cargarDinamicas() {
         }, {});
 
         for (const [nombreDinamica, productos] of Object.entries(agrupadas)) {
+            const productoUnico = productos.length === 1;
             let faltanteDinamica = 0;
             
             const textoUnidadGrupo = productos[0].unidad === 'Unds' ? 'Unidades Rotadas' : 'Ingresos';
-            const badgeColor = productos[0].unidad === 'Unds' ? '#3b82f6' : '#10b981';
+            const badgeColor = productos[0].unidad === 'Unds' ? '#087e8b' : '#10b981';
             
             let tipoStr = (productos[0].tipo_dinamica || "").trim();
             if (!tipoStr || tipoStr.toUpperCase() === "DINÁMICA" || tipoStr.toUpperCase() === "N/A") {
@@ -563,7 +638,7 @@ async function cargarDinamicas() {
                 faltanteDinamica += p_falt;
                 
                 const textoUnidad = d.unidad === 'Unds' ? 'Unidades Rotadas' : 'Ingresos';
-                const colorInd = (d.progreso || 0) >= 100 ? 'var(--success, #10b981)' : 'var(--primary, #3b82f6)';
+                const colorInd = (d.progreso || 0) >= 100 ? 'var(--success, #10b981)' : 'var(--primary, #087e8b)';
                 const colorPdv = (d.progreso_pdv || 0) >= 100 ? 'var(--success, #10b981)' : '#f59e0b';
                 
                 // 💡 MAGIA: Si NO es cargo especial, fabricamos el HTML de la sucursal. Si lo es, lo dejamos vacío.
@@ -587,7 +662,7 @@ async function cargarDinamicas() {
                 }
 
                 return `
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                    <div class="dynamic-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
                         <div style="font-weight: 700; font-size: 1.05rem; color: #1e293b; margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
                             ${d.producto}
                         </div>
@@ -612,10 +687,10 @@ async function cargarDinamicas() {
             }).join('');
 
             container.innerHTML += `
-                <div class="accordion-item">
-                    <div class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
+                <div class="accordion-item ${productoUnico ? 'accordion-item--directa active' : ''}">
+                    <div class="accordion-header" ${productoUnico ? '' : 'role="button" tabindex="0" onclick="alternarAcordeon(this)" onkeydown="tecladoAcordeon(event, this)" aria-expanded="false"'}>
                         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                            <i class="fas fa-chevron-down acc-icon"></i>
+                            <span class="acc-icon" aria-hidden="true">&#8964;</span>
                             <strong style="font-size: 1.1rem; color: var(--text-main);">${nombreDinamica}</strong>
                             <span style="background: ${badgeColor}20; color: ${badgeColor}; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
                                 ${tipoStr.toUpperCase()}
@@ -649,6 +724,7 @@ async function cargarDinamicas() {
 // ========================================================
 
 function cargarDinamicasConFiltro() {
+    NotificacionesUI.actualizar();
     const activeTab = document.querySelector('.tab-btn.active');
     if (!activeTab) return;
     
@@ -742,7 +818,42 @@ function reiniciarCarruselAuto() {
     iniciarCarruselAuto();
 }
 
+async function verDinamicaNotificada(aviso) {
+    const cargo = (localStorage.getItem('cargo_usuario') || '').toUpperCase().trim();
+    const vista = cargo === 'ADMIN' ? 'admin' : (cargo.includes('SUPERVISOR') || cargo.includes('COORDINADOR')) ? 'lideres' : 'dinamicas';
+    if (vista === 'admin') adminSubVistaActual = 'nacional';
+    await switchView(vista);
+    if (vista === 'admin') {
+        adminSubVistaActual = 'nacional';
+        const selector = document.getElementById('adminSelectDinamica');
+        selector.value = aviso.dinamica;
+        document.getElementById('adminSearchEntidad').value = '';
+        aplicarFiltrosAdmin();
+    }
+    const contenedor = document.getElementById(vista === 'admin' ? 'containerAdmin' : vista === 'lideres' ? 'containerLideres' : 'tableDinamicas');
+    const acordeones = [...contenedor.querySelectorAll('.accordion-item')];
+    const destino = vista === 'admin' ? (contenedor.querySelector('.resultado-equipo') || acordeones[0]) : acordeones.find(a => [...a.querySelectorAll('.accordion-header strong')].some(t => t.textContent.trim() === aviso.dinamica));
+    if (destino) {
+        destino.classList.add('active');
+        destino.querySelector('[role="button"]')?.setAttribute('aria-expanded', 'true');
+        destino.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
 function logout() {
+    NotificacionesUI.detener();
+    const lecturas = localStorage.getItem(NotificacionesUI.claveLecturas);
     localStorage.clear();
+    if (lecturas) localStorage.setItem(NotificacionesUI.claveLecturas, lecturas);
     window.location.href = 'index.html';
+}
+
+function alternarAcordeon(cabecera) {
+    const abierto = cabecera.parentElement.classList.toggle('active');
+    cabecera.setAttribute('aria-expanded', String(abierto));
+}
+function tecladoAcordeon(evento, cabecera) {
+    if (evento.key === 'Enter' || evento.key === ' ') {
+        evento.preventDefault(); alternarAcordeon(cabecera);
+    }
 }
