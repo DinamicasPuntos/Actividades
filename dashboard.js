@@ -126,8 +126,8 @@ async function cargarVisionAdmin() {
         await cambiarSubVistaAdmin(adminSubVistaActual);
         const estado = document.getElementById('estadoConexion');
         if (estado) {
-            estado.hidden = false;
-            estado.textContent = `Consulta completada · ${fecha} · ${(adminDataMaster.por_nacional || []).length} dinámicas en la vista nacional`;
+            estado.hidden = true;
+            estado.textContent = '';
         }
 
     } catch (e) {
