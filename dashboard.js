@@ -788,7 +788,8 @@ function renderizarCarrusel() {
 
         for (const [src, clase] of [[urlDesktop, 'banner-desktop'], [urlMobile, 'banner-mobile']]) {
             const img = document.createElement('img');
-            img.src = src; img.className = `banner-img ${clase}`; img.alt = `Banner ${index + 1}`;
+            img.className = `banner-img ${clase}`; img.alt = `Banner ${index + 1}`;
+            BannerImagenes.asignar(img, src);
             slide.appendChild(img);
         }
         slidesContainer.appendChild(slide);

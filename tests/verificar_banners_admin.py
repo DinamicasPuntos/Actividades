@@ -33,6 +33,9 @@ def main():
                 if req.url.startswith(local): route.continue_(); return
                 partes=urlsplit(req.url)
                 ruta=partes.path
+                if ruta.startswith('/media/banners/') and 'ngrok-skip-browser-warning' not in req.headers:
+                    route.fulfill(status=200, content_type='text/html', body='<p>Aviso del túnel</p>')
+                    return
                 if ruta.startswith('/banners/') or ruta.startswith('/media/banners/'):
                     respuesta=caso.client.request(req.method,ruta,headers=dict(req.headers),content=req.post_data_buffer)
                     route.fulfill(status=respuesta.status_code,body=respuesta.content,headers={'Content-Type':respuesta.headers.get('content-type','application/json'),'Access-Control-Allow-Origin':'*'})
@@ -66,12 +69,15 @@ def main():
             expect(page.locator('.banners-estado')).to_have_text('Banner publicado.')
             expect(page.locator('.banners-fila')).to_have_count(3)
             expect(page.locator('.carousel-slide')).to_have_count(3)
+            page.wait_for_function("Array.from(document.querySelectorAll('.carousel-slide:last-child img')).every(img => img.complete && img.naturalWidth > 0)")
+            page.wait_for_function("document.querySelector('.banners-fila:last-child img').naturalWidth > 0")
             page.locator('.banners-fila').first.get_by_role('button',name='Desactivar',exact=True).click()
             expect(page.locator('.banners-estado')).to_have_text('Banner desactivado.')
             expect(page.locator('.carousel-slide')).to_have_count(2)
             page.locator('.banners-fila').last.get_by_role('button',name='Subir',exact=True).click()
             expect(page.locator('.banners-estado')).to_have_text('Orden actualizado.')
             page.locator('.banners-fila').nth(1).get_by_role('button',name='Editar',exact=True).click()
+            page.wait_for_function("['desktop','mobile'].every(tipo => document.querySelector('[data-preview='+tipo+']').naturalWidth > 0)")
             page.locator('[name=titulo]').fill('Banner editado')
             page.get_by_role('button',name='Guardar cambios',exact=True).click()
             expect(page.locator('.banners-estado')).to_have_text('Banner actualizado.')

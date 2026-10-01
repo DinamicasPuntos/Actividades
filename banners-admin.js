@@ -27,7 +27,7 @@ globalThis.BannersAdmin = (() => {
         formulario.querySelector('[type=submit]').textContent = 'Publicar banner';
         for (const tipo of ['desktop', 'mobile']) {
             const img = formulario.querySelector(`[data-preview=${tipo}]`);
-            img.hidden = true; img.removeAttribute('src');
+            img.hidden = true; BannerImagenes.limpiar(img);
             if (vistas.has(tipo)) URL.revokeObjectURL(vistas.get(tipo));
         }
         vistas.clear();
@@ -39,7 +39,7 @@ globalThis.BannersAdmin = (() => {
         formulario.querySelector('[type=submit]').textContent = 'Guardar cambios';
         for (const tipo of ['desktop', 'mobile']) {
             const img = formulario.querySelector(`[data-preview=${tipo}]`);
-            img.src = banner[tipo] || banner.desktop || banner.mobile; img.hidden = false;
+            BannerImagenes.asignar(img, banner[tipo] || banner.desktop || banner.mobile); img.hidden = false;
         }
         informar('Selecciona únicamente las imágenes que quieras reemplazar.');
         formulario.scrollIntoView({block:'start', behavior:'smooth'});
@@ -66,7 +66,8 @@ globalThis.BannersAdmin = (() => {
         if (!registros.length) { lista.append(nodo('p', '', 'Todavía no hay banners.')); return; }
         registros.forEach((b, indice) => {
             const fila = nodo('article', 'banners-fila');
-            const img = nodo('img'); img.src = b.desktop || b.mobile; img.alt = ''; img.loading = 'lazy';
+            const img = nodo('img'); img.alt = '';
+            BannerImagenes.asignar(img, b.desktop || b.mobile);
             const texto = nodo('div', 'banners-fila-texto');
             texto.append(nodo('strong', '', b.titulo), nodo('small', '', `${indice + 1} · ${b.activo ? 'Visible' : 'Desactivado'}`));
             const acciones = nodo('div', 'banners-acciones');
@@ -119,7 +120,7 @@ globalThis.BannersAdmin = (() => {
             if (archivo.size > 8*1024*1024) { informar('Cada imagen debe pesar como máximo 8 MB.', true); formulario.elements[tipo].value = ''; return; }
             if (vistas.has(tipo)) URL.revokeObjectURL(vistas.get(tipo));
             const url = URL.createObjectURL(archivo); vistas.set(tipo,url);
-            const img = formulario.querySelector(`[data-preview=${tipo}]`); img.src=url; img.hidden=false;
+            const img = formulario.querySelector(`[data-preview=${tipo}]`); BannerImagenes.asignar(img, url); img.hidden=false;
         });
         formulario.onsubmit = e => {
             e.preventDefault();

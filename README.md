@@ -18,6 +18,8 @@ la cuenta propietaria configurada en el servidor. Permiten subir imágenes de
 PC y móvil, reemplazarlas, ordenar los banners, activarlos o desactivarlos y
 eliminarlos con confirmación. Eliminar retira la fila de Google Sheets y actualiza
 el carrusel; todas las operaciones requieren el permiso del propietario en la API.
+`banners-imagenes.js` carga las imágenes del servidor con el encabezado que evita
+el aviso intermedio de ngrok, tanto en el carrusel como en el administrador.
 La API verifica la identidad y el permiso en todas las operaciones. La opción
 no está disponible para otros administradores. Las sesiones anteriores de la
 cuenta propietaria deben renovarse con código de empleado y documento.
