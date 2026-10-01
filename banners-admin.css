@@ -21,6 +21,8 @@
 .banners-archivo img { display:block; max-width:100%; height:130px; object-fit:contain; margin:12px auto 0; }
 .banners-acciones { display:flex; gap:10px; flex-wrap:wrap; }
 .banners-panel .banners-primario { background:#147d73; color:white; border-color:#147d73; font-weight:600; }
+.banners-panel .banners-eliminar { color:#ab203b; border-color:#e5b9c2; }
+.banners-panel .banners-eliminar:hover { background:#fff0f3; }
 .banners-lista-titulo { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:24px 0 12px; }
 .banners-lista-titulo h3 { margin:0; }
 .banners-fila { display:flex; align-items:center; gap:14px; background:white; border:1px solid #dce6e9; padding:14px; margin-bottom:10px; border-radius:12px; }

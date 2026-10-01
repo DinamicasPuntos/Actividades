@@ -83,6 +83,12 @@ globalThis.BannersAdmin = (() => {
                     return solicitar('/banners/administracion/orden', {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({version, ids})});
                 }, 'Orden actualizado.'));
             }
+            boton('Eliminar', () => {
+                if (ocupado || !window.confirm(`¿Eliminar el banner «${b.titulo}»?\n\nSe quitará de la página y de la lista de banners. Esta acción no se puede deshacer desde el panel.`)) return;
+                ejecutar(() => solicitar(`/banners/administracion/${encodeURIComponent(b.id)}`, {
+                    method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({version})
+                }), 'Banner eliminado.');
+            }).classList.add('banners-eliminar');
             fila.append(img, texto, acciones); lista.append(fila);
         });
     }

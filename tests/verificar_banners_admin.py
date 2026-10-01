@@ -79,6 +79,27 @@ def main():
                 page.set_viewport_size({'width':ancho,'height':1000})
                 assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'),ancho
                 assert page.locator('#bannersPanel').evaluate('(e)=>e.scrollWidth<=e.clientWidth'),ancho
+            page.once('dialog', lambda dialog: dialog.dismiss())
+            page.locator('.banners-fila').nth(1).get_by_role('button', name='Eliminar', exact=True).click()
+            expect(page.locator('.banners-fila')).to_have_count(3)
+            expect(page.locator('.carousel-slide')).to_have_count(2)
+            confirmaciones = []
+            def confirmar(dialog):
+                confirmaciones.append(dialog.message)
+                dialog.accept()
+            page.once('dialog', confirmar)
+            page.locator('.banners-fila').nth(1).get_by_role('button', name='Eliminar', exact=True).click()
+            expect(page.locator('.banners-estado')).to_have_text('Banner eliminado.')
+            expect(page.locator('.banners-fila')).to_have_count(2)
+            expect(page.locator('.carousel-slide')).to_have_count(1)
+            assert 'Banner editado' in confirmaciones[0]
+            for restantes in [1, 0]:
+                page.once('dialog', lambda dialog: dialog.accept())
+                page.locator('.banners-fila').first.get_by_role('button', name='Eliminar', exact=True).click()
+                expect(page.locator('.banners-estado')).to_have_text('Banner eliminado.')
+                expect(page.locator('.banners-fila')).to_have_count(restantes)
+            expect(page.locator('#bannerCarousel')).to_be_hidden()
+            expect(page.locator('.banners-lista')).to_have_text('Todavía no hay banners.')
             page.keyboard.press('Escape'); expect(page.locator('#bannersPanel')).not_to_be_visible()
             assert not errores,errores
             context.close()
