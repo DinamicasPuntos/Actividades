@@ -14,6 +14,7 @@ window.onload = async () => {
         window.location.href = 'index.html'; 
         return;
     }
+    globalThis.BannersAdmin?.iniciar({apiUrl: API_URL, actualizar: cargarBanners});
 
     const ahora = new Date();
     const mes = String(ahora.getMonth() + 1).padStart(2, '0');
@@ -755,11 +756,17 @@ async function cargarBanners() {
         
         const data = await res.json();
         bannersData = data.banners;
+        clearInterval(slideInterval);
+        currentSlide = 0;
 
         if (bannersData.length > 0) {
             document.getElementById('bannerCarousel').style.display = 'block';
             renderizarCarrusel();
             iniciarCarruselAuto();
+        } else {
+            document.getElementById('bannerCarousel').style.display = 'none';
+            document.getElementById('carouselSlides').replaceChildren();
+            document.getElementById('carouselDots').replaceChildren();
         }
     } catch (e) {
         console.error("Error cargando banners:", e);
@@ -779,10 +786,11 @@ function renderizarCarrusel() {
         const urlDesktop = banner.desktop || banner.mobile;
         const urlMobile = banner.mobile || banner.desktop;
 
-        slide.innerHTML = `
-            <img src="${urlDesktop}" class="banner-img banner-desktop" alt="Banner ${index + 1}">
-            <img src="${urlMobile}" class="banner-img banner-mobile" alt="Banner ${index + 1}">
-        `;
+        for (const [src, clase] of [[urlDesktop, 'banner-desktop'], [urlMobile, 'banner-mobile']]) {
+            const img = document.createElement('img');
+            img.src = src; img.className = `banner-img ${clase}`; img.alt = `Banner ${index + 1}`;
+            slide.appendChild(img);
+        }
         slidesContainer.appendChild(slide);
 
         const dot = document.createElement('div');

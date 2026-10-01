@@ -32,6 +32,12 @@ def main():
             for cargo in ['ADMIN', 'SUPERVISOR', 'COORDINADOR', 'VENDEDOR', 'CALL CENTER', 'SUPERNUMERARIO']:
                 context = browser.new_context(viewport={'width':1200, 'height':1100})
                 context.add_init_script("""
+                    const FechaReal = Date;
+                    const instantePrueba = FechaReal.parse('2026-09-24T15:00:00Z');
+                    window.Date = class extends FechaReal {
+                        constructor(...args) { super(...(args.length ? args : [instantePrueba])); }
+                        static now() { return instantePrueba; }
+                    };
                     localStorage.setItem('access_token','token-prueba');
                     localStorage.setItem('cargo_usuario', %s);
                     localStorage.setItem('nombre_usuario','Perfil de prueba');

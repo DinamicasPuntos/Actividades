@@ -13,6 +13,13 @@ Los archivos públicos son `index.html`, `dashboard.html`, `style.css`,
 `participantes.js` y `notificaciones.js`. Las hojas de estilo y scripts llevan
 una versión en la URL para renovar la caché después de publicar.
 
+`banners-admin.js` y `banners-admin.css` añaden la administración de banners en
+la cuenta propietaria configurada en el servidor. Permiten subir imágenes de
+PC y móvil, reemplazarlas, ordenar los banners y activarlos o desactivarlos.
+La API verifica la identidad y el permiso en todas las operaciones. La opción
+no está disponible para otros administradores. Las sesiones anteriores de la
+cuenta propietaria deben renovarse con código de empleado y documento.
+
 La API configurada en `script.js` y `dashboard.js` entrega los datos reales.
 Para los detalles por producto debe incluir `alcance` y `rotacion_productos`;
 para las alertas, el endpoint autenticado `/notificaciones`.

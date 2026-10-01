@@ -7,6 +7,7 @@
     <title>Panel de Control | Recolección de puntos</title>
     <link rel="stylesheet" href="dashboard-style.css?v=20260930-1">
     <link rel="stylesheet" href="design.css?v=20260930-1">
+    <link rel="stylesheet" href="banners-admin.css?v=20261001-1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -22,6 +23,7 @@
                 <div><h1>Dinámicas<span class="brand-dot">.</span></h1><span class="brand-caption">Tu portal de resultados</span></div>
             </div>
             <div class="user-profile">
+                <button id="bannersAbrir" class="banners-acceso" type="button" hidden>Administrar banners</button>
                 <button id="notificacionesDesplegar" class="notificaciones-acceso" type="button" aria-expanded="false" aria-controls="muroNotificaciones" aria-haspopup="dialog">
                     <span id="notificacionesAlternarTexto">Notificaciones</span>
                     <span id="notificacionesContador" class="notificaciones-contador" aria-live="polite">Revisando</span>
@@ -173,6 +175,7 @@
     </aside>
     <script src="participantes.js?v=20260930-1"></script>
     <script src="notificaciones.js?v=20260930-1"></script>
-    <script src="dashboard.js?v=20260930-2"></script>
+    <script src="banners-admin.js?v=20261001-1"></script>
+    <script src="dashboard.js?v=20261001-1"></script>
 </body>
 </html>
