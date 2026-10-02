@@ -16,7 +16,13 @@ window.onload = async () => {
     }
     globalThis.BannersAdmin?.iniciar({apiUrl: API_URL, actualizar: cargarBanners});
     try { await globalThis.PersonalUI?.iniciar(API_URL); }
-    catch(error) { console.error(error); return; }
+    catch(error) {
+        console.error(error); hideLoader();
+        const aviso=document.createElement('p');aviso.setAttribute('role','alert');
+        aviso.textContent=error.message;
+        document.querySelector('main').prepend(aviso);
+        return;
+    }
 
     const ahora = new Date();
     const mes = String(ahora.getMonth() + 1).padStart(2, '0');
@@ -840,7 +846,7 @@ function reiniciarCarruselAuto() {
 
 async function verDinamicaNotificada(aviso) {
     const cargo = (localStorage.getItem('cargo_usuario') || '').toUpperCase().trim();
-    const vista = cargo === 'ADMIN' ? 'admin' : (cargo.includes('SUPERVISOR') || cargo.includes('COORDINADOR')) ? 'lideres' : 'dinamicas';
+    const vista = cargo === 'ADMIN' ? 'admin' : (cargo.includes('SUPERVISOR') || cargo.includes('COORDINADOR') || cargo === 'ADMINISTRADOR PDV') ? 'lideres' : 'dinamicas';
     if (vista === 'admin') adminSubVistaActual = 'nacional';
     await switchView(vista);
     if (vista === 'admin') {
