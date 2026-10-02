@@ -63,6 +63,7 @@
     }
 
     function renderizarRotacion(datos) {
+        if (normalizar(datos).tipo !== 'productos') return '';
         const productos = productosConRotacion(datos);
         if (!productos.length) return '<p class="participantes-pendientes">Sin detalle de productos para esta vista.</p>';
         const dinero = datos.unidad === '$';
@@ -81,7 +82,7 @@
     }
 
     function renderizar(datos) {
-        return `<section class="dinamica-participantes" aria-label="Productos y resultados">${renderizarAlcance(datos)}${renderizarRotacion(datos)}</section>`;
+        return `<section class="dinamica-participantes" aria-label="Alcance y resultados">${renderizarAlcance(datos)}${renderizarRotacion(datos)}</section>`;
     }
 
     global.ParticipantesDinamica = {normalizar, productosConRotacion, renderizar, renderizarAlcance, renderizarRotacion};

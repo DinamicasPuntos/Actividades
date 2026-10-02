@@ -636,10 +636,11 @@ async function cargarDinamicas() {
             }
             
             let htmlProductos = productos.map(d => {
+                const identidad = ParticipantesDinamica.renderizarAlcance(d);
                 if (d.sin_cuota_individual) {
                     const escapar = valor => {const n=document.createElement('span');n.textContent=String(valor ?? '');return n.innerHTML;};
                     const pdvs=(d.pdvs || []).map(p=>`<li><strong>${escapar(p.nombre)}</strong>: vendiste ${Number(p.mis_ventas).toLocaleString()} ${escapar(d.unidad)}. ${p.cumple ? 'El PDV cumple la cuota.' : 'El PDV aún no cumple la cuota.'}</li>`).join('');
-                    return `<div class="dynamic-card"><strong>${escapar(d.producto)}</strong><p>Tus ventas: ${Number(d.actual).toLocaleString()} ${escapar(d.unidad)} · Sin cuota individual.</p><p>Tu pago depende del cumplimiento del PDV donde vendiste.</p><ul>${pdvs}</ul></div>`;
+                    return `<div class="dynamic-card">${identidad || `<strong>${escapar(d.producto)}</strong>`}<p>Tus ventas: ${Number(d.actual).toLocaleString()} ${escapar(d.unidad)} · Sin cuota individual.</p><p>Tu pago depende del cumplimiento del PDV donde vendiste.</p><ul>${pdvs}</ul></div>`;
                 }
                 const p_falt = d.faltante || 0;
                 const pdv_falt = d.faltante_pdv || 0;
@@ -678,7 +679,7 @@ async function cargarDinamicas() {
                 return `
                     <div class="dynamic-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
                         <div style="font-weight: 700; font-size: 1.05rem; color: #1e293b; margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
-                            ${d.producto}
+                            ${identidad || d.producto}
                         </div>
                         
                         <div style="margin-bottom: ${esCargoEspecial ? '0' : '15px'};">

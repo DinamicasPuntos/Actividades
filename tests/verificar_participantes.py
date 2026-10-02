@@ -58,6 +58,8 @@ def main():
                         datos = {"dinamicas_lider": [{**din, "nombre": din["dinamica"], "sucursales": [{**din, "nombre_pdv": "PDV de ejemplo"}]} for din in DINAMICAS]}
                     elif "/banners" in destino:
                         datos = []
+                    elif "/personal/mi-perfil" in destino:
+                        datos = {"sincronizado": False}
                     else:
                         route.abort()
                         return
@@ -98,6 +100,11 @@ def main():
                 expect(container.get_by_text("Sin detalle de productos para esta vista.")).to_be_visible()
                 expect(container.locator('.dynamic-card').first.get_by_text('Producto de ejemplo 1', exact=True)).to_have_count(1)
                 expect(container).not_to_contain_text('Productos participantes')
+                for nombre in ['Marca de ejemplo', 'Cuidado personal']:
+                    tarjeta = container.locator('.dynamic-card' if cargo == 'ADMIN' else '.accordion-item').filter(has_text=nombre)
+                    expect(tarjeta).to_have_count(1)
+                    expect(tarjeta.locator('.rotacion-productos, .rotacion-directa, .productos-adicionales')).to_have_count(0)
+                    expect(tarjeta).not_to_contain_text('Producto de ejemplo')
                 if cargo == "ADMIN":
                     container.screenshot(path=str(capturas / "participantes-escritorio.png"), style=".top-bar { visibility: hidden; }")
                     normalizado = page.evaluate("ParticipantesDinamica.normalizar({productos: [{codigo: '01', nombre: 'Uno'}, {codigo: '01', nombre: 'Uno'}]})")
