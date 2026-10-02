@@ -32,3 +32,9 @@ Las comprobaciones del navegador están en `tests/`. Requieren Python,
 Playwright y Microsoft Edge. Utilizan respuestas simuladas para probar los
 roles y no publican datos privados. La prueba de notificaciones también requiere
 la copia del backend en el directorio superior.
+El propietario dispone de «Personal y accesos» para solicitar sincronización,
+elegir responsables cuando una zona tiene varios supervisores y habilitar o
+desactivar invitados a la consulta nacional. Los permisos efectivos se verifican
+en la API con el directorio diario de Uni y Dropo. Los invitados no reciben los
+permisos administrativos del propietario.
+

@@ -46,6 +46,7 @@ def main():
                 elif ruta=='/admin/vision-global':
                     datos={'por_nacional':[],'por_supervisor':[],'por_coordinador':[],'por_especial':[]}
                 elif ruta=='/notificaciones': datos={'notificaciones':[]}
+                elif ruta=='/personal/mi-perfil': datos={'sincronizado':False}
                 else: route.fulfill(status=200,body=''); return
                 route.fulfill(content_type='application/json',body=json.dumps(datos))
 

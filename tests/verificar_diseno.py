@@ -56,6 +56,8 @@ def main():
                         datos = {'comisiones': [{'laboratorio':'Laboratorio de ejemplo','monto':35000,'unidad_label':'Puntos'}] if 'fecha=2026-05' in destino else [], 'periodos_disponibles':['2026-05']}
                     elif '/notificaciones' in destino:
                         datos = {'notificaciones': [], 'dinamicas_evaluadas': 2, 'periodo': '2026-09', 'generado_en': '2026-09-24T12:00:00-05:00'}
+                    elif '/personal/mi-perfil' in destino:
+                        datos = {'sincronizado':False}
                     elif '/banners' in destino:
                         datos = {'banners': []}
                     else:

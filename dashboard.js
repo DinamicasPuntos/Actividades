@@ -15,6 +15,8 @@ window.onload = async () => {
         return;
     }
     globalThis.BannersAdmin?.iniciar({apiUrl: API_URL, actualizar: cargarBanners});
+    try { await globalThis.PersonalUI?.iniciar(API_URL); }
+    catch(error) { console.error(error); return; }
 
     const ahora = new Date();
     const mes = String(ahora.getMonth() + 1).padStart(2, '0');
@@ -41,7 +43,7 @@ window.onload = async () => {
         tabComisiones.classList.add('hidden');
         switchView('admin');
     } 
-    else if (cargo.includes("SUPERVISOR") || cargo.includes("COORDINADOR")) {
+    else if (cargo.includes("SUPERVISOR") || cargo.includes("COORDINADOR") || cargo === 'ADMINISTRADOR PDV') {
         tabAdmin.classList.add('hidden');
         tabLideres.classList.remove('hidden');
         tabDinamicas.classList.add('hidden');
@@ -628,6 +630,11 @@ async function cargarDinamicas() {
             }
             
             let htmlProductos = productos.map(d => {
+                if (d.sin_cuota_individual) {
+                    const escapar = valor => {const n=document.createElement('span');n.textContent=String(valor ?? '');return n.innerHTML;};
+                    const pdvs=(d.pdvs || []).map(p=>`<li><strong>${escapar(p.nombre)}</strong>: vendiste ${Number(p.mis_ventas).toLocaleString()} ${escapar(d.unidad)}. ${p.cumple ? 'El PDV cumple la cuota.' : 'El PDV aún no cumple la cuota.'}</li>`).join('');
+                    return `<div class="dynamic-card"><strong>${escapar(d.producto)}</strong><p>Tus ventas: ${Number(d.actual).toLocaleString()} ${escapar(d.unidad)} · Sin cuota individual.</p><p>Tu pago depende del cumplimiento del PDV donde vendiste.</p><ul>${pdvs}</ul></div>`;
+                }
                 const p_falt = d.faltante || 0;
                 const pdv_falt = d.faltante_pdv || 0;
                 const p_act = d.actual || 0;
@@ -699,7 +706,7 @@ async function cargarDinamicas() {
                         </div>
                         <div class="text-right">
                             <span style="color: ${faltanteDinamica > 0 ? '#e11d48' : 'var(--success)'}; font-weight: bold; font-size: 0.95rem;">
-                                Mi Faltante: ${faltanteDinamica.toLocaleString()} ${textoUnidadGrupo}
+                                ${productos[0].sin_cuota_individual ? 'Sin cuota individual' : `Mi Faltante: ${faltanteDinamica.toLocaleString()} ${textoUnidadGrupo}`}
                             </span>
                         </div>
                     </div>
@@ -711,6 +718,10 @@ async function cargarDinamicas() {
 
         document.getElementById('mainLabel').innerText = "Faltante Total Mes (Personal)";
         document.getElementById('totalGeneral').innerText = totalFaltanteGlobal > 0 ? `- ${totalFaltanteGlobal.toLocaleString()}` : "¡COMPLETO!";
+        if(data.dinamicas.some(d=>d.sin_cuota_individual)){
+            document.getElementById('mainLabel').innerText='Condición de pago';
+            document.getElementById('totalGeneral').innerText='Cumplimiento por PDV';
+        }
         
     } catch (e) {       
         console.error(e); 

@@ -70,6 +70,8 @@ def main():
                         datos={'dinamicas_lider':[{**d, 'sucursales':[{'nombre_pdv':entidad, 'meta':100, 'actual':d['actual'], 'progreso':d['actual'], 'faltante':d['faltante']}]} for d in dinamicas]}
                     elif '/comisiones/mis-dinamicas' in destino:
                         datos={'dinamicas':dinamicas}
+                    elif '/personal/mi-perfil' in destino:
+                        datos={'sincronizado':False}
                     elif '/banners' in destino:
                         datos={'banners':[]}
                     else:
