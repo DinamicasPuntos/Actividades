@@ -202,3 +202,9 @@ dialog.notificaciones-lateral::backdrop { background: #102b3e66; backdrop-filter
     .notificaciones-acceso { flex-wrap: nowrap; }
     .notificaciones-lateral #notificacionesContenido { padding: 0 14px 20px; }
 }
+/* Rotación sin objetivo: cifras de ventas sin barras de cumplimiento. */
+.rotacion-sin-cuota { padding: 20px; margin-bottom: 15px; }
+.rotacion-cabecera { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.rotacion-acumulada { color: var(--text-main); margin: 16px 0; }
+.rotacion-acumulada strong { font-size: 1.65rem; color: var(--primary); }
+.rotacion-condicion { color: var(--text-muted); font-size: .85rem; margin-top: 14px; }

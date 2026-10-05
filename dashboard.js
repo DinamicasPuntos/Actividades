@@ -239,11 +239,12 @@ function renderizarVistaAdmin(agrupado) {
         const dinámicas = agrupado[entidad];
         
         let htmlDinamicas = dinámicas.map(d => {
+            if (d.sin_cuota) return ParticipantesDinamica.renderizarSinCuota(d, d.dinamica || 'Dinámica');
             const badgeColor = d.unidad === 'Unds' ? '#087e8b' : '#10b981';
             const textoUnidad = d.unidad === 'Unds' ? 'Unidades' : 'Ingresos';
             const textoBadge = d.unidad === 'Unds' ? 'Unidades Rotadas' : 'Ingresos';
             
-            let tipoStr = d.tipo_dinamica || "";
+            let tipoStr = d.categoria_label || d.tipo_dinamica || "";
             if (!tipoStr || tipoStr.toUpperCase() === "DINÁMICA" || tipoStr.toUpperCase() === "N/A") {
                 tipoStr = textoBadge;
             }
@@ -422,12 +423,13 @@ async function cargarEquiposLider() {
             const textoUnidad = din.unidad === 'Unds' ? 'Unidades Rotadas' : 'Ingresos';
             
             // 💡 REGLA DE ORO PARA EL BADGE - VISTA LÍDERES
-            let tipoStr = (din.tipo_dinamica || "").trim();
+            let tipoStr = (din.categoria_label || din.tipo_dinamica || "").trim();
             if (!tipoStr || tipoStr.toUpperCase() === "DINÁMICA" || tipoStr.toUpperCase() === "N/A") {
                 tipoStr = din.unidad === 'Unds' ? 'UNIDADES ROTADAS' : 'INGRESOS';
             }
 
             let htmlSucursales = din.sucursales.map(suc => {
+                if (din.sin_cuota) return ParticipantesDinamica.renderizarSinCuota({...suc, alcance:din.alcance, unidad:din.unidad}, suc.nombre_pdv);
                 const s_falt = suc.faltante || 0;
                 const s_act = suc.actual || 0;
                 const s_met = suc.meta || 0;
@@ -630,12 +632,13 @@ async function cargarDinamicas() {
             const textoUnidadGrupo = productos[0].unidad === 'Unds' ? 'Unidades Rotadas' : 'Ingresos';
             const badgeColor = productos[0].unidad === 'Unds' ? '#087e8b' : '#10b981';
             
-            let tipoStr = (productos[0].tipo_dinamica || "").trim();
+            let tipoStr = (productos[0].categoria_label || productos[0].tipo_dinamica || "").trim();
             if (!tipoStr || tipoStr.toUpperCase() === "DINÁMICA" || tipoStr.toUpperCase() === "N/A") {
                 tipoStr = productos[0].unidad === 'Unds' ? 'UNIDADES ROTADAS' : 'INGRESOS';
             }
             
             let htmlProductos = productos.map(d => {
+                if (d.sin_cuota) return ParticipantesDinamica.renderizarSinCuota(d, 'Mi rotación', true);
                 const identidad = ParticipantesDinamica.renderizarAlcance(d);
                 if (d.sin_cuota_individual) {
                     const escapar = valor => {const n=document.createElement('span');n.textContent=String(valor ?? '');return n.innerHTML;};
@@ -713,7 +716,7 @@ async function cargarDinamicas() {
                         </div>
                         <div class="text-right">
                             <span style="color: ${faltanteDinamica > 0 ? '#e11d48' : 'var(--success)'}; font-weight: bold; font-size: 0.95rem;">
-                                ${productos[0].sin_cuota_individual ? 'Sin cuota individual' : `Mi Faltante: ${faltanteDinamica.toLocaleString()} ${textoUnidadGrupo}`}
+                                ${productos[0].sin_cuota ? 'Sin cuota' : productos[0].sin_cuota_individual ? 'Sin cuota individual' : `Mi Faltante: ${faltanteDinamica.toLocaleString()} ${textoUnidadGrupo}`}
                             </span>
                         </div>
                     </div>
@@ -725,7 +728,10 @@ async function cargarDinamicas() {
 
         document.getElementById('mainLabel').innerText = "Faltante Total Mes (Personal)";
         document.getElementById('totalGeneral').innerText = totalFaltanteGlobal > 0 ? `- ${totalFaltanteGlobal.toLocaleString()}` : "¡COMPLETO!";
-        if(data.dinamicas.some(d=>d.sin_cuota_individual)){
+        if(data.dinamicas.every(d=>d.sin_cuota)){
+            document.getElementById('mainLabel').innerText='Mi rotación del período';
+            document.getElementById('totalGeneral').innerText=data.dinamicas.reduce((total,d)=>total+Number(d.actual || 0),0).toLocaleString('es-CO')+' unidades';
+        } else if(data.dinamicas.some(d=>d.sin_cuota_individual && !d.sin_cuota)){
             document.getElementById('mainLabel').innerText='Condición de pago';
             document.getElementById('totalGeneral').innerText='Cumplimiento por PDV';
         }
