@@ -16,7 +16,7 @@ def main():
         'alcance':{'tipo':'productos','productos':[{'nombre':'Producto A'}]},
         'rotacion_productos':[{'nombre':'Producto A','actual':19}]}
         for nombre,sin_cuota in [('Solo rotación',True),('Rotación nacional',False),('Rotación con cuota',False)]]
-    dinamicas[0].update(meta=0, meta_pdv=0, faltante=0, faltante_pdv=0, progreso=None, progreso_pdv=None)
+    dinamicas[0].update(meta=0, meta_pdv=2, minimo_pdv=2, faltante=0, faltante_pdv=0, progreso=None, progreso_pdv=None)
     dinamicas[1].update(meta=4000, faltante=3981, progreso=19/4000*100, cuota_nacional=4000)
     try:
         with sync_playwright() as p:
@@ -56,6 +56,8 @@ def main():
                 expect(solo).to_contain_text('19 unidades rotadas')
                 expect(solo).not_to_contain_text('%')
                 expect(solo).not_to_contain_text('Faltan')
+                expect(solo).to_contain_text('al menos 2 unidades')
+                expect(solo).to_contain_text('sin cuota individual')
                 expect(contenedor).to_contain_text('ROTACIÓN NACIONAL')
                 expect(contenedor).to_contain_text('ROTACIÓN CON CUOTA')
                 for width in [1440,390,320]:

@@ -88,18 +88,21 @@
     function renderizarSinCuota(datos, titulo, personal = false) {
         const formato = valor => cantidadReal(valor).toLocaleString('es-CO', {maximumFractionDigits:2});
         const actual = datos.actual ?? datos.actual_general ?? 0;
+        const minimo = cantidadReal(datos.minimo_pdv || 0);
         const detalle = personal ? renderizarAlcance(datos) || `<strong>${escapar(datos.producto || '')}</strong>` : renderizar(datos);
         const equipos = personal && Array.isArray(datos.pdvs)
-            ? `<ul>${datos.pdvs.map(p=>`<li>${escapar(p.nombre)}: ${formato(p.mis_ventas)} unidades</li>`).join('')}</ul>` : '';
+            ? `<ul>${datos.pdvs.map(p=>`<li>${escapar(p.nombre)}: ${formato(p.mis_ventas)} unidades${minimo ? ` · ${cantidadReal(p.actual) >= minimo ? 'El PDV alcanzó el mínimo.' : 'El PDV aún no alcanza el mínimo.'}` : ''}</li>`).join('')}</ul>` : '';
         const equipo = personal && !datos.pdvs && datos.actual_pdv !== undefined
             ? `<p>Ventas del PDV: <strong>${formato(datos.actual_pdv)}</strong> unidades</p>` : '';
         const especiales = datos.actual_call !== undefined
             ? `<p>Call center: ${formato(datos.actual_call)} · Supernumerarios: ${formato(datos.actual_super)}</p>` : '';
+        const condicion = minimo ? `Pago cuando el PDV alcance al menos ${formato(minimo)} unidades en esta dinámica. Cada persona cobra por sus ventas, sin cuota individual.`
+            : 'Pago según las ventas, sin exigir cumplimiento de cuota.';
         return `<article class="dynamic-card rotacion-sin-cuota">
-            <div class="rotacion-cabecera"><strong>${escapar(titulo)}</strong><span class="participantes-etiqueta">Solo rotación · Sin cuota</span></div>
+            <div class="rotacion-cabecera"><strong>${escapar(titulo)}</strong><span class="participantes-etiqueta">Solo rotación · ${minimo ? 'Sin cuota individual' : 'Sin cuota'}</span></div>
             <p class="rotacion-acumulada"><strong>${formato(actual)}</strong> unidades rotadas</p>
             ${detalle}${equipo}${equipos}${especiales}
-            <p class="rotacion-condicion">Pago según las ventas, sin exigir cumplimiento de cuota.</p>
+            <p class="rotacion-condicion">${condicion}</p>
         </article>`;
     }
 
