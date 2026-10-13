@@ -5,6 +5,19 @@ const API_URL = "https://dinamicas-back.duckdns.org";
 function showLoader() { document.getElementById('loader').classList.add('active'); }
 function hideLoader() { document.getElementById('loader').classList.remove('active'); }
 
+async function fetchConTiempo(url, opciones = {}) {
+    const control = new AbortController();
+    const tiempo = setTimeout(() => control.abort(), 60000);
+    try {
+        const respuesta = await fetch(url, {...opciones, signal: control.signal});
+        const cuerpo = await respuesta.blob();
+        return new Response(cuerpo, {status: respuesta.status, headers: respuesta.headers});
+    } catch (error) {
+        if (error.name === 'AbortError') throw new Error('La consulta tardó demasiado. Vuelve a actualizar la vista.');
+        throw error;
+    } finally { clearTimeout(tiempo); }
+}
+
 window.onload = async () => {
     if (globalThis.PrepararSesionLocal && !await globalThis.PrepararSesionLocal()) return;
     cargarBanners();
@@ -34,6 +47,7 @@ window.onload = async () => {
     
     // --- LÓGICA DE PERMISOS JERÁRQUICOS (3 NIVELES) ---
     const cargo = (localStorage.getItem('cargo_usuario') || "").toUpperCase().trim();
+    globalThis.InformesUI?.iniciar(cargo);
     try { NotificacionesUI.iniciar({ apiUrl: API_URL, verDinamica: verDinamicaNotificada }); }
     catch (error) { console.error('No se pudieron iniciar las notificaciones:', error); }
     
@@ -121,7 +135,7 @@ async function cargarVisionAdmin() {
     
     try {
         const url = `${API_URL}/admin/vision-global?fecha=${fecha}&_cb=${new Date().getTime()}`;
-        const res = await fetch(url, {
+        const res = await fetchConTiempo(url, {
             headers: { 'Authorization': `Bearer ${token}`, 'ngrok-skip-browser-warning': '69420' }
         });
         
@@ -166,8 +180,9 @@ function cambiarSubVistaAdmin(nivel) {
         tabActiva.classList.add('active');
     }
 
-    return new Promise(resolve => requestAnimationFrame(() => {
+    return new Promise((resolve, reject) => requestAnimationFrame(() => {
         setTimeout(() => {
+            try {
             adminSubVistaActual = nivel;
             const dataActual = adminDataMaster[`por_${nivel}`] || [];
 
@@ -185,8 +200,9 @@ function cambiarSubVistaAdmin(nivel) {
             document.getElementById('adminSearchEntidad').value = '';
             document.getElementById('adminSearchEntidad').placeholder = nivel === 'coordinador' ? 'Buscar región...' : nivel === 'supervisor' ? 'Buscar zona...' : 'Buscar equipo...';
             aplicarFiltrosAdmin();
-            hideLoader();
             resolve();
+            } catch (error) { reject(error); }
+            finally { hideLoader(); }
         }, 50);
     }));
 }
@@ -393,7 +409,7 @@ async function cargarEquiposLider() {
     
     try {
         const url = `${API_URL}/lideres/mis-equipos?fecha=${fecha}&_cb=${new Date().getTime()}`;
-        const res = await fetch(url, {
+        const res = await fetchConTiempo(url, {
             headers: { 
                 'Authorization': `Bearer ${token}`,
                 'ngrok-skip-browser-warning': '69420' 
@@ -495,7 +511,7 @@ async function cargarComisiones() {
     
     try {
         const url = `${API_URL}/comisiones/mis-datos?fecha=${fecha}&_cb=${new Date().getTime()}`;
-        const res = await fetch(url, {
+        const res = await fetchConTiempo(url, {
             headers: { 
                 'Authorization': `Bearer ${token}`,
                 'ngrok-skip-browser-warning': '69420' 
@@ -592,7 +608,7 @@ async function cargarDinamicas() {
     
     try {
         const url = `${API_URL}/comisiones/mis-dinamicas?fecha=${fecha}&_cb=${new Date().getTime()}`;
-        const res = await fetch(url, {
+        const res = await fetchConTiempo(url, {
             headers: { 
                 'Authorization': `Bearer ${token}`,
                 'ngrok-skip-browser-warning': '69420'
@@ -773,7 +789,7 @@ let bannersData = [];
 async function cargarBanners() {
     try {
         const url = `${API_URL}/banners?_cb=${new Date().getTime()}`;
-        const res = await fetch(url, {
+        const res = await fetchConTiempo(url, {
             headers: { 'ngrok-skip-browser-warning': '69420' }
         });
         if (!res.ok) return;
