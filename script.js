@@ -1,5 +1,5 @@
-// 1. CAMBIAMOS NGROK POR TU SERVIDOR LOCAL
-const API_URL = "https://vague-monika-preimportantly.ngrok-free.dev";
+// API del servidor con HTTPS.
+const API_URL = "https://dinamicas-back.duckdns.org";
 
 if (localStorage.getItem('access_token')) {
     window.location.href = 'dashboard.html';

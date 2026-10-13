@@ -1,5 +1,5 @@
 // Cambia la URL según donde estés probando
-const API_URL = "https://vague-monika-preimportantly.ngrok-free.dev"; 
+const API_URL = "https://dinamicas-back.duckdns.org";
 // const API_URL = "http://127.0.0.1:8000";
 
 function showLoader() { document.getElementById('loader').classList.add('active'); }
