@@ -89,7 +89,7 @@
 
             <section id="informesPanel" hidden style="margin: 0 0 20px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: white;">
                 <button id="descargarInforme" type="button" class="tab-btn">Descargar informe Excel</button>
-                <p style="margin: 8px 0; color: var(--text-muted);">Resumen, PDV y detalle de vendedores y productos del período. Incluye tu alcance autorizado y la dinámica seleccionada.</p>
+                <p id="informeDescripcion" style="margin: 8px 0; color: var(--text-muted);">Resumen, PDV y detalle de vendedores y productos del período. Incluye tu alcance autorizado y la dinámica seleccionada.</p>
                 <p id="informeEstado" role="status" aria-live="polite" style="margin: 0;"></p>
             </section>
             <div class="content-card">
@@ -97,11 +97,13 @@
                 <div id="view-admin" class="view-section hidden" style="padding: 20px;">
                     
                     <div class="admin-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-                        <button class="tab-btn active" id="subtab-nacional" onclick="cambiarSubVistaAdmin('nacional')" style="flex: 1; min-width: 140px;">Vista Nacional</button>
+                        <button class="tab-btn active" id="subtab-nacional" onclick="cambiarSubVistaAdmin('nacional')" style="flex: 1; min-width: 140px;">Nacional · Por vendedor</button>
+                        <button class="tab-btn" id="subtab-nacional_pdv" onclick="cambiarSubVistaAdmin('nacional_pdv')" style="flex: 1; min-width: 140px;">Nacional · Por PDV</button>
                         <button class="tab-btn" id="subtab-coordinador" onclick="cambiarSubVistaAdmin('coordinador')" style="flex: 1; min-width: 140px;">Coordinaciones</button>
                         <button class="tab-btn" id="subtab-supervisor" onclick="cambiarSubVistaAdmin('supervisor')" style="flex: 1; min-width: 140px;">Supervisiones</button>
                         <button class="tab-btn" id="subtab-especial" onclick="cambiarSubVistaAdmin('especial')" style="flex: 1; min-width: 140px;">Callcenter y Supernum.</button>
                     </div>
+                    <p id="criterioNacional" style="color:var(--text-muted); margin:0 0 18px;" aria-live="polite">Suma las cajas completas de cada vendedor.</p>
 
                     <div class="filter-panel" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
     
@@ -183,7 +185,7 @@
     <script src="personal-admin.js?v=20261002-1"></script>
     <script src="banners-imagenes.js?v=20261001-3"></script>
     <script src="banners-admin.js?v=20261001-3"></script>
-    <script src="informes.js?v=20261013-1"></script>
-    <script src="dashboard.js?v=20261013-2"></script>
+    <script src="informes.js?v=20261014-1"></script>
+    <script src="dashboard.js?v=20261014-1"></script>
 </body>
 </html>

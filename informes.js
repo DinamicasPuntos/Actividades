@@ -10,13 +10,14 @@ globalThis.InformesUI = (() => {
             const fecha = document.getElementById('fechaFiltro').value;
             if (!fecha) { estado.textContent = 'Selecciona el período del informe.'; return; }
             const params = new URLSearchParams({fecha});
+            const porPdv = cargo === 'ADMIN' && typeof adminSubVistaActual !== 'undefined' && adminSubVistaActual === 'nacional_pdv';
             const dinamica = cargo === 'ADMIN' ? document.getElementById('adminSelectDinamica').value : '';
             if (dinamica && dinamica !== 'TODAS') params.set('dinamica', dinamica);
             const controller = new AbortController();
             const timer = setTimeout(() => controller.abort(), 120000);
             boton.disabled = true; estado.textContent = 'Preparando tu informe…';
             try {
-                const response = await fetch(`${API_URL}/informes/dinamicas.xlsx?${params}`, {
+                const response = await fetch(`${API_URL}${porPdv ? '/admin/vision-pdv.xlsx' : '/informes/dinamicas.xlsx'}?${params}`, {
                     headers: {Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`},
                     signal: controller.signal
                 });
@@ -28,10 +29,10 @@ globalThis.InformesUI = (() => {
                 const archivo = await response.blob();
                 const url = URL.createObjectURL(archivo);
                 const enlace = document.createElement('a');
-                enlace.href = url; enlace.download = `Informe_dinamicas_${fecha}.xlsx`;
+                enlace.href = url; enlace.download = porPdv ? `Informe_nacional_PDV_${fecha}.xlsx` : `Informe_dinamicas_${fecha}.xlsx`;
                 document.body.append(enlace); enlace.click(); enlace.remove();
                 setTimeout(() => URL.revokeObjectURL(url), 30000);
-                estado.textContent = 'Informe descargado: resumen, PDV y detalle de vendedores y productos.';
+                estado.textContent = porPdv ? 'Informe descargado: resumen nacional por PDV y detalle por presentación.' : 'Informe descargado: resumen, PDV y detalle de vendedores y productos.';
             } catch (error) {
                 estado.textContent = error.name === 'AbortError'
                     ? 'La descarga tardó demasiado. Intenta nuevamente o selecciona una sola dinámica.'

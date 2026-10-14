@@ -146,7 +146,7 @@ async function cargarVisionAdmin() {
         }
 
         adminDataMaster = await res.json();
-        await cambiarSubVistaAdmin(adminSubVistaActual);
+        if (await cambiarSubVistaAdmin(adminSubVistaActual) === false) return;
         const estado = document.getElementById('estadoConexion');
         if (estado) {
             estado.hidden = true;
@@ -163,10 +163,39 @@ async function cargarVisionAdmin() {
     } 
 }
 
-function cambiarSubVistaAdmin(nivel) {
+async function cambiarSubVistaAdmin(nivel) {
     showLoader();
+    if (nivel === 'nacional_pdv' && !adminDataMaster.por_nacional_pdv) {
+        try {
+            const fecha = document.getElementById('fechaFiltro').value;
+            const respuesta = await fetchConTiempo(`${API_URL}/admin/vision-pdv?fecha=${encodeURIComponent(fecha)}`, {
+                headers: {Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`}
+            });
+            if (respuesta.status === 401) { hideLoader(); return logout(); }
+            if (!respuesta.ok) {
+                const error = await respuesta.json().catch(() => ({}));
+                throw new Error(error.detail || 'No se pudo cargar la vista nacional por PDV.');
+            }
+            Object.assign(adminDataMaster, await respuesta.json());
+        } catch (error) {
+            const estado = document.getElementById('estadoConexion');
+            estado.hidden = false; estado.textContent = error.message;
+            document.getElementById('containerAdmin').textContent = 'No se pudo cargar el resumen por PDV.';
+            document.getElementById('totalGeneral').innerText = 'Error';
+            hideLoader(); return false;
+        }
+    }
+    document.getElementById('estadoConexion').hidden = true;
+    const criterio = document.getElementById('criterioNacional');
+    criterio.hidden = !nivel.startsWith('nacional');
+    criterio.textContent = nivel === 'nacional_pdv'
+        ? 'Completa cajas con las ventas de todos los vendedores del mismo PDV y presentación.'
+        : 'Suma las cajas completas de cada vendedor.';
+    document.getElementById('informeDescripcion').textContent = nivel === 'nacional_pdv'
+        ? 'Resumen nacional por PDV y detalle por sucursal y presentación de la dinámica seleccionada.'
+        : 'Resumen, PDV y detalle de vendedores y productos del período. Incluye tu alcance autorizado y la dinámica seleccionada.';
     
-    ['nacional', 'coordinador', 'supervisor', 'especial'].forEach(n => {
+    ['nacional', 'nacional_pdv', 'coordinador', 'supervisor', 'especial'].forEach(n => {
         const btn = document.getElementById(`subtab-${n}`);
         if(btn) {
             btn.classList.remove('active');
@@ -236,7 +265,7 @@ function renderizarVistaAdmin(agrupado) {
     const container = document.getElementById('containerAdmin');
     container.innerHTML = "";
     const dinamicaUnica = document.getElementById('adminSelectDinamica').value !== 'TODAS';
-    const tarjetasDirectas = dinamicaUnica || adminSubVistaActual === 'nacional';
+    const tarjetasDirectas = dinamicaUnica || adminSubVistaActual.startsWith('nacional');
     container.classList.toggle('resultados-por-equipo', tarjetasDirectas);
 
     const keys = Object.keys(agrupado);
@@ -255,6 +284,12 @@ function renderizarVistaAdmin(agrupado) {
         const dinámicas = agrupado[entidad];
         
         let htmlDinamicas = dinámicas.map(d => {
+            if (d.disponible === false) {
+                const tarjeta = document.createElement('div'); tarjeta.className = 'dynamic-card';
+                const titulo = document.createElement('strong'); titulo.textContent = d.dinamica;
+                const mensaje = document.createElement('p'); mensaje.textContent = 'Pendiente de actualización del cálculo por PDV.';
+                tarjeta.append(titulo, mensaje); return tarjeta.outerHTML;
+            }
             if (d.sin_cuota) return ParticipantesDinamica.renderizarSinCuota(d, d.dinamica || 'Dinámica');
             const badgeColor = d.unidad === 'Unds' ? '#087e8b' : '#10b981';
             const textoUnidad = d.unidad === 'Unds' ? 'Unidades' : 'Ingresos';
@@ -356,9 +391,18 @@ function renderizarVistaAdmin(agrupado) {
                     </div>
                 </div>`;
             }
+        }).map((html, indice) => {
+            const fecha = dinámicas[indice].actualizacion;
+            if (adminSubVistaActual !== 'nacional_pdv' || !fecha) return html;
+            const hora = new Date(fecha);
+            if (Number.isNaN(hora.getTime())) return html;
+            const aviso = document.createElement('p');
+            aviso.style.cssText = 'font-size:.75rem;color:var(--text-muted);margin:-8px 0 20px 20px;';
+            aviso.textContent = `Actualizado: ${hora.toLocaleString('es-CO', {timeZone:'America/Bogota'})}`;
+            return html + aviso.outerHTML;
         }).join('');
 
-        if (adminSubVistaActual === 'nacional' && !dinamicaUnica) {
+        if (adminSubVistaActual.startsWith('nacional') && !dinamicaUnica) {
             container.insertAdjacentHTML('beforeend', htmlDinamicas);
             return;
         }
