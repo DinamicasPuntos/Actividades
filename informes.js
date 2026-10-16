@@ -16,6 +16,11 @@ globalThis.InformesUI = (() => {
             const controller = new AbortController();
             const timer = setTimeout(() => controller.abort(), 120000);
             boton.disabled = true; estado.textContent = 'Preparando tu informe…';
+            panel.dataset.estado = 'cargando'; panel.setAttribute('aria-busy', 'true');
+            const etiqueta = boton.querySelector('span');
+            const icono = boton.querySelector('i');
+            if (etiqueta) etiqueta.textContent = 'Preparando Excel…';
+            if (icono) icono.className = 'fas fa-spinner fa-spin';
             try {
                 const response = await fetch(`${API_URL}${porPdv ? '/admin/vision-pdv.xlsx' : '/informes/dinamicas.xlsx'}?${params}`, {
                     headers: {Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`},
@@ -33,12 +38,17 @@ globalThis.InformesUI = (() => {
                 document.body.append(enlace); enlace.click(); enlace.remove();
                 setTimeout(() => URL.revokeObjectURL(url), 30000);
                 estado.textContent = porPdv ? 'Informe descargado: resumen nacional por PDV y detalle por presentación.' : 'Informe descargado: resumen, PDV y detalle de vendedores y productos.';
+                panel.dataset.estado = 'listo';
             } catch (error) {
+                panel.dataset.estado = 'error';
                 estado.textContent = error.name === 'AbortError'
                     ? 'La descarga tardó demasiado. Intenta nuevamente o selecciona una sola dinámica.'
                     : error.message;
             } finally {
                 clearTimeout(timer); boton.disabled = false;
+                panel.removeAttribute('aria-busy');
+                if (etiqueta) etiqueta.textContent = 'Descargar Excel';
+                if (icono) icono.className = 'fas fa-arrow-down';
             }
         };
     }

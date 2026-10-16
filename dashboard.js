@@ -48,6 +48,7 @@ window.onload = async () => {
     // --- LÓGICA DE PERMISOS JERÁRQUICOS (3 NIVELES) ---
     const cargo = (localStorage.getItem('cargo_usuario') || "").toUpperCase().trim();
     globalThis.InformesUI?.iniciar(cargo);
+    globalThis.PuntosEstimadosUI?.iniciar(cargo);
     try { NotificacionesUI.iniciar({ apiUrl: API_URL, verDinamica: verDinamicaNotificada }); }
     catch (error) { console.error('No se pudieron iniciar las notificaciones:', error); }
     
@@ -80,6 +81,7 @@ window.onload = async () => {
 };
 
 async function switchView(view) {
+    globalThis.PuntosEstimadosUI?.cambiarVista(view);
     showLoader();
     await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -243,6 +245,7 @@ function limpiarFiltrosAdmin() {
 }
 
 function aplicarFiltrosAdmin() {
+    globalThis.PuntosEstimadosUI?.actualizar();
     const searchVal = document.getElementById('adminSearchEntidad').value.toLowerCase().trim();
     const dinVal = document.getElementById('adminSelectDinamica').value;
     

@@ -6,7 +6,7 @@
     <meta name="referrer" content="no-referrer">
     <title>Panel de Control | Recolección de puntos</title>
     <link rel="stylesheet" href="dashboard-style.css?v=20260930-1">
-    <link rel="stylesheet" href="design.css?v=20261005-1">
+    <link rel="stylesheet" href="design.css?v=20261016-2">
     <link rel="stylesheet" href="banners-admin.css?v=20261001-2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -87,11 +87,27 @@
                 </div>
             </section>
 
-            <section id="informesPanel" hidden style="margin: 0 0 20px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: white;">
-                <button id="descargarInforme" type="button" class="tab-btn">Descargar informe Excel</button>
-                <p id="informeDescripcion" style="margin: 8px 0; color: var(--text-muted);">Resumen, PDV y detalle de vendedores y productos del período. Incluye tu alcance autorizado y la dinámica seleccionada.</p>
-                <p id="informeEstado" role="status" aria-live="polite" style="margin: 0;"></p>
+            <section id="informesPanel" class="informe-panel" hidden aria-labelledby="informeTitulo">
+                <div class="informe-icono" aria-hidden="true"><i class="fas fa-file-excel"></i><span>XLSX</span></div>
+                <div class="informe-contenido">
+                    <span class="informe-kicker">TUS RESULTADOS, EN UN ARCHIVO</span>
+                    <h3 id="informeTitulo">Lleva el detalle contigo</h3>
+                    <p id="informeDescripcion">Descarga el resumen de dinámicas y el detalle de tu equipo para el período seleccionado.</p>
+                    <div class="informe-etiquetas"><span><i class="fas fa-table" aria-hidden="true"></i> Tablas con filtros</span><span><i class="fas fa-chart-bar" aria-hidden="true"></i> Resumen y detalle</span></div>
+                </div>
+                <div class="informe-accion"><button id="descargarInforme" type="button" class="informe-descarga"><i class="fas fa-arrow-down" aria-hidden="true"></i><span>Descargar Excel</span></button><span class="informe-ayuda">Según tu perfil y selección</span></div>
+                <p id="informeEstado" class="informe-estado" role="status" aria-live="polite"></p>
             </section>
+            <details id="puntosEstimadosPanel" class="puntos-estimados-panel">
+                <summary><span><i class="fas fa-coins" aria-hidden="true"></i> Puntos estimados <small>Dinámicas activas</small></span><span class="puntos-ver">Ver detalle <i class="fas fa-chevron-down" aria-hidden="true"></i></span></summary>
+                <div class="puntos-estimados-contenido">
+                    <p>Estimación con las ventas y el cumplimiento actuales. Puede cambiar hasta la liquidación.</p>
+                    <div class="puntos-busqueda"><label for="puntosBuscar">Buscar vendedor o dinámica</label><input id="puntosBuscar" type="search" placeholder="Escribe un nombre…" maxlength="100"><button id="puntosConsultar" type="button">Consultar</button></div>
+                    <p id="puntosEstado" role="status" aria-live="polite"></p>
+                    <div id="puntosResultados"></div>
+                    <div class="puntos-paginacion"><button id="puntosAnterior" type="button">Anterior</button><span id="puntosPagina"></span><button id="puntosSiguiente" type="button">Siguiente</button></div>
+                </div>
+            </details>
             <div class="content-card">
                 
                 <div id="view-admin" class="view-section hidden" style="padding: 20px;">
@@ -185,7 +201,8 @@
     <script src="personal-admin.js?v=20261002-1"></script>
     <script src="banners-imagenes.js?v=20261001-3"></script>
     <script src="banners-admin.js?v=20261001-3"></script>
-    <script src="informes.js?v=20261014-1"></script>
-    <script src="dashboard.js?v=20261016-1"></script>
+    <script src="informes.js?v=20261016-2"></script>
+    <script src="puntos-estimados.js?v=20261016-2"></script>
+    <script src="dashboard.js?v=20261016-2"></script>
 </body>
 </html>
