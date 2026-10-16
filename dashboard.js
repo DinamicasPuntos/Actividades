@@ -391,15 +391,6 @@ function renderizarVistaAdmin(agrupado) {
                     </div>
                 </div>`;
             }
-        }).map((html, indice) => {
-            const fecha = dinámicas[indice].actualizacion;
-            if (adminSubVistaActual !== 'nacional_pdv' || !fecha) return html;
-            const hora = new Date(fecha);
-            if (Number.isNaN(hora.getTime())) return html;
-            const aviso = document.createElement('p');
-            aviso.style.cssText = 'font-size:.75rem;color:var(--text-muted);margin:-8px 0 20px 20px;';
-            aviso.textContent = `Actualizado: ${hora.toLocaleString('es-CO', {timeZone:'America/Bogota'})}`;
-            return html + aviso.outerHTML;
         }).join('');
 
         if (adminSubVistaActual.startsWith('nacional') && !dinamicaUnica) {
@@ -703,7 +694,7 @@ async function cargarDinamicas() {
                 if (d.sin_cuota_individual) {
                     const escapar = valor => {const n=document.createElement('span');n.textContent=String(valor ?? '');return n.innerHTML;};
                     const pdvs=(d.pdvs || []).map(p=>`<li><strong>${escapar(p.nombre)}</strong>: vendiste ${Number(p.mis_ventas).toLocaleString()} ${escapar(d.unidad)}. ${p.cumple ? 'El PDV cumple la cuota.' : 'El PDV aún no cumple la cuota.'}</li>`).join('');
-                    return `<div class="dynamic-card">${identidad || `<strong>${escapar(d.producto)}</strong>`}<p>Tus ventas: ${Number(d.actual).toLocaleString()} ${escapar(d.unidad)} · Sin cuota individual.</p><p>Tu pago depende del cumplimiento del PDV donde vendiste.</p><ul>${pdvs}</ul></div>`;
+                    return `<div class="dynamic-card">${identidad || `<strong>${escapar(d.producto)}</strong>`}<p>Tus ventas: ${Number(d.actual).toLocaleString()} ${escapar(d.unidad)}</p><p>Tu pago depende del cumplimiento del PDV donde vendiste.</p><ul>${pdvs}</ul></div>`;
                 }
                 const p_falt = d.faltante || 0;
                 const pdv_falt = d.faltante_pdv || 0;
@@ -776,7 +767,7 @@ async function cargarDinamicas() {
                         </div>
                         <div class="text-right">
                             <span style="color: ${faltanteDinamica > 0 ? '#e11d48' : 'var(--success)'}; font-weight: bold; font-size: 0.95rem;">
-                                ${productos[0].sin_cuota ? 'Sin cuota' : productos[0].sin_cuota_individual ? 'Sin cuota individual' : `Mi Faltante: ${faltanteDinamica.toLocaleString()} ${textoUnidadGrupo}`}
+                                ${productos[0].sin_cuota ? 'Sin cuota' : productos[0].sin_cuota_individual ? 'Mis ventas' : `Mi Faltante: ${faltanteDinamica.toLocaleString()} ${textoUnidadGrupo}`}
                             </span>
                         </div>
                     </div>

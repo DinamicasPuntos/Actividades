@@ -96,10 +96,10 @@
             ? `<p>Ventas del PDV: <strong>${formato(datos.actual_pdv)}</strong> unidades</p>` : '';
         const especiales = datos.actual_call !== undefined
             ? `<p>Call center: ${formato(datos.actual_call)} · Supernumerarios: ${formato(datos.actual_super)}</p>` : '';
-        const condicion = minimo ? `Pago cuando el PDV alcance al menos ${formato(minimo)} unidades en esta dinámica. Cada persona cobra por sus ventas, sin cuota individual.`
+        const condicion = minimo ? `Pago cuando el PDV alcance al menos ${formato(minimo)} unidades en esta dinámica.`
             : '';
         return `<article class="dynamic-card rotacion-sin-cuota">
-            <div class="rotacion-cabecera"><strong>${escapar(titulo)}</strong><span class="participantes-etiqueta">Solo rotación · ${minimo ? 'Sin cuota individual' : 'Sin cuota'}</span></div>
+            <div class="rotacion-cabecera"><strong>${escapar(titulo)}</strong><span class="participantes-etiqueta">Solo rotación</span></div>
             <p class="rotacion-acumulada"><strong>${formato(actual)}</strong> unidades rotadas</p>
             ${detalle}${equipo}${equipos}${especiales}
             ${condicion ? `<p class="rotacion-condicion">${condicion}</p>` : ''}

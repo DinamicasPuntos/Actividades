@@ -57,7 +57,7 @@ def main():
                 expect(solo).not_to_contain_text('%')
                 expect(solo).not_to_contain_text('Faltan')
                 expect(solo).to_contain_text('al menos 2 unidades')
-                expect(solo).to_contain_text('sin cuota individual')
+                expect(solo).not_to_contain_text('cuota individual')
                 expect(contenedor).to_contain_text('ROTACIÓN NACIONAL')
                 expect(contenedor).to_contain_text('ROTACIÓN CON CUOTA')
                 for width in [1440,390,320]:
