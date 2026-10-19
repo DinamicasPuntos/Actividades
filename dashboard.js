@@ -48,7 +48,6 @@ window.onload = async () => {
     // --- LÓGICA DE PERMISOS JERÁRQUICOS (3 NIVELES) ---
     const cargo = (localStorage.getItem('cargo_usuario') || "").toUpperCase().trim();
     globalThis.InformesUI?.iniciar(cargo);
-    globalThis.PuntosEstimadosUI?.iniciar(cargo);
     try { NotificacionesUI.iniciar({ apiUrl: API_URL, verDinamica: verDinamicaNotificada }); }
     catch (error) { console.error('No se pudieron iniciar las notificaciones:', error); }
     
@@ -81,7 +80,6 @@ window.onload = async () => {
 };
 
 async function switchView(view) {
-    globalThis.PuntosEstimadosUI?.cambiarVista(view);
     showLoader();
     await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -245,7 +243,6 @@ function limpiarFiltrosAdmin() {
 }
 
 function aplicarFiltrosAdmin() {
-    globalThis.PuntosEstimadosUI?.actualizar();
     const searchVal = document.getElementById('adminSearchEntidad').value.toLowerCase().trim();
     const dinVal = document.getElementById('adminSelectDinamica').value;
     
@@ -330,6 +327,7 @@ function renderizarVistaAdmin(agrupado) {
                     </div>
                     
                     ${ParticipantesDinamica.renderizar(d)}
+                    ${PuntosDinamica.renderizar(d.puntos)}
                     <div style="margin-bottom: 15px;">
                         <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px;">
                             <span style="font-weight: 700; color: #334155;"><i class="fas fa-chart-pie" style="color: var(--primary);"></i> General (${conteoTotal} Personas)</span>
@@ -385,6 +383,7 @@ function renderizarVistaAdmin(agrupado) {
                         </span>
                     </div>
                     ${ParticipantesDinamica.renderizar(d)}
+                    ${PuntosDinamica.renderizar(d.puntos)}
                     <div style="background: #f1f5f9; border-radius: 8px; height: 10px; overflow: hidden; width: 100%;">
                         <div style="width: ${p_norm}%; background: ${p_norm >= 100 ? '#10b981' : '#168e94'}; height: 100%; transition: width 0.8s ease;"></div>
                     </div>
@@ -507,6 +506,7 @@ async function cargarEquiposLider() {
                         ${s_act.toLocaleString()} / ${s_met.toLocaleString()} (${s_prog.toFixed(1)}%)
                     </div>
                     ${ParticipantesDinamica.renderizarRotacion({...suc, alcance: din.alcance, unidad: din.unidad})}
+                    ${PuntosDinamica.renderizar(suc.puntos)}
                 </div>`;
             }).join('');
 
@@ -774,6 +774,7 @@ async function cargarDinamicas() {
                             </span>
                         </div>
                     </div>
+                    ${PuntosDinamica.renderizar(data.puntos_por_dinamica?.[nombreDinamica], true)}
                     <div class="accordion-content">
                         ${htmlProductos}
                     </div>

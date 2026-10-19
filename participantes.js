@@ -102,6 +102,7 @@
             <div class="rotacion-cabecera"><strong>${escapar(titulo)}</strong><span class="participantes-etiqueta">Solo rotación</span></div>
             <p class="rotacion-acumulada"><strong>${formato(actual)}</strong> unidades rotadas</p>
             ${detalle}${equipo}${equipos}${especiales}
+            ${globalThis.PuntosDinamica?.renderizar(datos.puntos, personal) || ''}
             ${condicion ? `<p class="rotacion-condicion">${condicion}</p>` : ''}
         </article>`;
     }
