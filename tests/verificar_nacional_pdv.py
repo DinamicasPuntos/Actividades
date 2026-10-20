@@ -37,6 +37,7 @@ def main():
         expect(page.locator('#adminSelectDinamica')).to_have_value('PRUEBA')
         expect(page.locator('#criterioNacional')).to_contain_text('mismo PDV')
         expect(page.locator('#containerAdmin')).not_to_contain_text('Actualizado:')
+        page.select_option('#informeTipo','actual')
         with page.expect_download():page.click('#descargarInforme')
         assert descargas and 'dinamica=PRUEBA' in descargas[0]
         page.click('#subtab-nacional');expect(page.locator('#containerAdmin')).to_contain_text('6 / 10')

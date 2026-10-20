@@ -146,6 +146,7 @@ async function cargarVisionAdmin() {
         }
 
         adminDataMaster = await res.json();
+        globalThis.InformesUI?.actualizarDinamicas((adminDataMaster.por_nacional || []).map(d=>d.dinamica), fecha);
         if (await cambiarSubVistaAdmin(adminSubVistaActual) === false) return;
         const estado = document.getElementById('estadoConexion');
         if (estado) {
@@ -461,6 +462,7 @@ async function cargarEquiposLider() {
         }
 
         const data = await res.json();
+        globalThis.InformesUI?.actualizarDinamicas((data.dinamicas_lider || []).map(d=>d.nombre), fecha);
         const container = document.getElementById('containerLideres');
         container.innerHTML = "";
 

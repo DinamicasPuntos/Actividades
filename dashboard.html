@@ -6,7 +6,7 @@
     <meta name="referrer" content="no-referrer">
     <title>Panel de Control | Recolección de puntos</title>
     <link rel="stylesheet" href="dashboard-style.css?v=20260930-1">
-    <link rel="stylesheet" href="design.css?v=20261019-1">
+    <link rel="stylesheet" href="design.css?v=20261020-1">
     <link rel="stylesheet" href="banners-admin.css?v=20261001-2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -94,6 +94,10 @@
                     <h3 id="informeTitulo">Lleva el detalle contigo</h3>
                     <p id="informeDescripcion">Descarga el resumen de dinámicas y el detalle de tu equipo para el período seleccionado.</p>
                     <div class="informe-etiquetas"><span><i class="fas fa-table" aria-hidden="true"></i> Tablas con filtros</span><span><i class="fas fa-chart-bar" aria-hidden="true"></i> Resumen y detalle</span></div>
+                </div>
+                <div class="informe-filtros">
+                    <label for="informeTipo">Tipo de informe<select id="informeTipo"><option value="pdv">Dinámica por PDV</option><option value="actual">Informe de la vista actual</option></select></label>
+                    <label for="informeDinamica">Dinámica<select id="informeDinamica"><option value="">Todas las dinámicas</option></select></label>
                 </div>
                 <div class="informe-accion"><button id="descargarInforme" type="button" class="informe-descarga"><i class="fas fa-arrow-down" aria-hidden="true"></i><span>Descargar Excel</span></button><span class="informe-ayuda">Según tu perfil y selección</span></div>
                 <p id="informeEstado" class="informe-estado" role="status" aria-live="polite"></p>
@@ -191,8 +195,8 @@
     <script src="personal-admin.js?v=20261002-1"></script>
     <script src="banners-imagenes.js?v=20261001-3"></script>
     <script src="banners-admin.js?v=20261001-3"></script>
-    <script src="informes.js?v=20261016-2"></script>
+    <script src="informes.js?v=20261020-1"></script>
     <script src="puntos-tarjetas.js?v=20261019-1"></script>
-    <script src="dashboard.js?v=20261019-1"></script>
+    <script src="dashboard.js?v=20261020-1"></script>
 </body>
 </html>
