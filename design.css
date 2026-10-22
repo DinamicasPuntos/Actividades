@@ -18,6 +18,22 @@
 .puntos-acumulado { text-align:right; flex:1; min-width:180px; }.puntos-acumulado > span { display:block; font-size:11px; color:#60766e; }.puntos-acumulado strong { display:block; font-size:25px; font-weight:750; letter-spacing:-.5px; margin-top:3px; }.puntos-acumulado strong small { font-size:12px; font-weight:600; letter-spacing:0; }.puntos-condicion { display:block; margin-top:5px; font-size:11px; line-height:1.6; color:#8b6a28; }
 @media(max-width:600px) { .dinamica-puntos { padding:14px; gap:12px; }.puntos-acumulado { text-align:left; }.accordion-item > .dinamica-puntos { margin:0 12px 12px; } }
 * { box-sizing: border-box; }
+.banners-panel.liquidaciones-panel { width:min(1100px,95vw); }
+.liquidaciones-panel .banners-formulario { display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1fr); gap:18px; margin:18px 0; }
+.liquidaciones-panel select { display:block; width:100%; min-width:0; border:1px solid #c9d9de; border-radius:8px; padding:11px; margin-top:8px; font:inherit; color:#234956; background:white; }
+.liquidaciones-panel #liquidacionPreparar { grid-column:1/-1; justify-self:start; background:#176e61; color:white; border-color:#176e61; }
+.liquidaciones-panel select:focus-visible { outline:3px solid #69c3bb; outline-offset:2px; }
+.liquidacion-resumen { display:flex; flex-wrap:wrap; gap:16px; align-items:center; padding:20px; margin:16px 0; background:#edf7f3; border-radius:12px; color:#24594d; }
+.liquidacion-resumen strong { font-size:25px; }.liquidacion-resumen span { font-size:13px; }
+.liquidacion-acciones { display:flex; flex-wrap:wrap; gap:12px; margin:18px 0; }
+.liquidacion-confirmar { background:#176e61!important; color:white!important; }
+.liquidacion-pendiente { padding:12px; border-radius:8px; background:#fff3d8; color:#76571e; }
+.liquidacion-tabla { overflow-x:auto; max-height:440px; border:1px solid #e1e9ed; border-radius:10px; }
+.liquidacion-tabla table { border-collapse:collapse; width:100%; font-size:12px; background:white; }
+.liquidacion-tabla th { position:sticky; top:0; background:#eaf2f4; text-align:left; }
+.liquidacion-tabla :is(th,td) { padding:12px; border-bottom:1px solid #e1e9ed; }
+.liquidaciones-panel label input[type=checkbox] { width:auto; margin-right:8px; }
+@media(max-width:600px) { .liquidaciones-panel .banners-formulario { grid-template-columns:minmax(0,1fr); padding:14px; } }
 body { color: var(--text-main); font-family: 'Segoe UI', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
 button, input, select { font-family: inherit; }
 button, summary, input, select { -webkit-tap-highlight-color: transparent; }

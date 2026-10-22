@@ -45,6 +45,7 @@ window.onload = async () => {
     document.getElementById('userName').innerText = localStorage.getItem('nombre_usuario') || "Empleado";
     document.getElementById('userCedula').innerHTML = `<i class="fas fa-id-card"></i> C.C. ${localStorage.getItem('documento_usuario') || "Sin registro"}`;
     
+    globalThis.LiquidacionesUI?.iniciar(API_URL).catch(e=>console.error('Liquidaciones:',e));
     // --- LÓGICA DE PERMISOS JERÁRQUICOS (3 NIVELES) ---
     const cargo = (localStorage.getItem('cargo_usuario') || "").toUpperCase().trim();
     globalThis.InformesUI?.iniciar(cargo);
