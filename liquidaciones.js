@@ -72,8 +72,11 @@ globalThis.LiquidacionesUI = (() => {
         const scroll=el('div');scroll.className='liquidacion-tabla';const tabla=el('table'),head=el('thead'),fila=el('tr');
         const cols=d.modo==='vendedor'?[['nombre','Vendedor'],['cedula','Cédula']]:[];
         cols.push(['sucursal','PDV'],['producto','Producto o grupo'],['actual','Rotación'],['puntos','Puntos'],['estado','Estado']);
+        if(d.filas.some(r=>r.cumplimiento_pdv!==undefined))cols.splice(cols.length-2,0,
+            ['actual_pdv','Rotación marca PDV'],['meta_pdv','Objetivo marca PDV'],
+            ['cumplimiento_pdv','Cumplimiento marca (%)']);
         cols.forEach(([,t])=>fila.append(el('th',t)));head.append(fila);tabla.append(head);const body=el('tbody');
-        d.filas.forEach(r=>{const tr=el('tr');cols.forEach(([k])=>tr.append(el('td',['actual','puntos'].includes(k)?numero(r[k]):r[k] || '')));body.append(tr);});
+        d.filas.forEach(r=>{const tr=el('tr');cols.forEach(([k])=>tr.append(el('td',['actual','puntos','actual_pdv','meta_pdv','cumplimiento_pdv'].includes(k)?numero(r[k]):r[k] || '')));body.append(tr);});
         tabla.append(body);scroll.append(tabla);contenido.append(scroll);
     }
     async function abrir() {
