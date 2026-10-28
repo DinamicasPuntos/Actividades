@@ -7,7 +7,16 @@ globalThis.LiquidacionesUI = (() => {
         const r=await fetch(api+'/liquidaciones'+ruta,{method,headers:headers(),...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(90000)});
         const d=await r.json();if(!r.ok)throw new Error(d.detail || 'No se pudo completar la operación.');return d;
     }
+    function actualizarOpciones() {
+        if(!catalogo)return;
+        for(const opcion of seleccion.options) {
+            const c=catalogo.dinamicas[Number(opcion.value)];
+            const confirmada=catalogo.liquidaciones.some(l=>l.dinamica===c.dinamica && l.periodo===c.periodo && l.modo===modo.value && l.estado==='confirmada');
+            opcion.textContent=`${confirmada?'✓ ':''}${c.periodo} · ${c.dinamica}${confirmada?' · Confirmada':''}${c.disponible?'':' · Aún no disponible'}`;
+        }
+    }
     function elegir() {
+        actualizarOpciones();
         actual=null;contenido.replaceChildren();clearTimeout(timer);
         const c=catalogo?.dinamicas[Number(seleccion.value)];
         const previa=c && catalogo.liquidaciones.find(l=>l.dinamica===c.dinamica && l.periodo===c.periodo && l.modo===modo.value);
@@ -25,6 +34,7 @@ globalThis.LiquidacionesUI = (() => {
         actual=d;contenido.replaceChildren();clearTimeout(timer);
         const previo=catalogo.liquidaciones.findIndex(r=>r.id===d.id);
         if(previo>=0)catalogo.liquidaciones[previo]=d;else catalogo.liquidaciones.push(d);
+        actualizarOpciones();
         const estadoNombre={esperando:'Esperando al computador conectado a Uni y Dropo',procesando:'Consultando y calculando',preparada:'Vista previa lista',confirmada:'Liquidación confirmada',error:'No se pudo preparar'};
         estado.textContent=estadoNombre[d.estado] || d.estado;
         preparar.disabled=ocupado || ['esperando','procesando','confirmada'].includes(d.estado);
@@ -53,7 +63,7 @@ globalThis.LiquidacionesUI = (() => {
             check.onchange=()=>confirmar.disabled=!check.checked || Boolean(d.bloqueos?.length);
             confirmar.onclick=async()=>{
                 ocupado=true;confirmar.disabled=true;preparar.disabled=true;seleccion.disabled=true;modo.disabled=true;
-                try {dibujar(await pedir('/'+d.id+'/confirmar','POST',{huella:d.huella}));catalogo=await pedir('');}
+                try {dibujar(await pedir('/'+d.id+'/confirmar','POST',{huella:d.huella}));catalogo=await pedir('');actualizarOpciones();}
                 catch(e){estado.textContent=e.message;confirmar.disabled=!check.checked;}
                 finally{ocupado=false;seleccion.disabled=false;modo.disabled=false;preparar.disabled=actual?.estado==='confirmada';}
             };acciones.append(confirmar);
