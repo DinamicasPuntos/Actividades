@@ -20,9 +20,9 @@ globalThis.LiquidacionesUI = (() => {
         actual=null;contenido.replaceChildren();clearTimeout(timer);
         const c=catalogo?.dinamicas[Number(seleccion.value)];
         const previa=c && catalogo.liquidaciones.find(l=>l.dinamica===c.dinamica && l.periodo===c.periodo && l.modo===modo.value);
-        preparar.disabled=ocupado || !c || !c.disponible || (modo.value==='vendedor' && c.vendedor_historico) || previa?.estado==='confirmada';
+        preparar.disabled=ocupado || !c || !c.disponible || (modo.value==='vendedor' && c.vendedor_historico) || previa?.estado==='confirmada' || Boolean(previa?.corregida_excel);
         estado.textContent=!c?'No hay dinámicas configuradas.':!c.disponible?c.motivo:modo.value==='vendedor' && c.vendedor_historico?'La liquidación de vendedores ya existe en el histórico.':`Finalizó el ${c.fin}. Prepara el cálculo para revisarlo.`;
-        preparar.textContent=previa?.estado==='preparada' || previa?.estado==='error'?'Volver a preparar':'Preparar liquidación';
+        preparar.textContent=previa?.corregida_excel?'Ventas corregidas desde Excel':previa?.estado==='preparada' || previa?.estado==='error'?'Volver a preparar':'Preparar liquidación';
         if(previa)cargar(previa.id);
     }
     async function cargar(id) {
@@ -37,7 +37,8 @@ globalThis.LiquidacionesUI = (() => {
         actualizarOpciones();
         const estadoNombre={esperando:'Esperando al computador conectado a Uni y Dropo',procesando:'Consultando y calculando',preparada:'Vista previa lista',confirmada:'Liquidación confirmada',error:'No se pudo preparar'};
         estado.textContent=estadoNombre[d.estado] || d.estado;
-        preparar.disabled=ocupado || ['esperando','procesando','confirmada'].includes(d.estado);
+        preparar.disabled=ocupado || ['esperando','procesando','confirmada'].includes(d.estado) || Boolean(d.corregida_excel);
+        if(d.corregida_excel)preparar.textContent='Ventas corregidas desde Excel';
         if(d.error)contenido.append(el('p',d.error));
         if(['esperando','procesando'].includes(d.estado)) {
             contenido.append(el('p','Mantén encendido y conectado el computador del generador. Puedes cerrar este panel y regresar después.'));
@@ -65,7 +66,7 @@ globalThis.LiquidacionesUI = (() => {
                 ocupado=true;confirmar.disabled=true;preparar.disabled=true;seleccion.disabled=true;modo.disabled=true;
                 try {dibujar(await pedir('/'+d.id+'/confirmar','POST',{huella:d.huella}));catalogo=await pedir('');actualizarOpciones();}
                 catch(e){estado.textContent=e.message;confirmar.disabled=!check.checked;}
-                finally{ocupado=false;seleccion.disabled=false;modo.disabled=false;preparar.disabled=actual?.estado==='confirmada';}
+                finally{ocupado=false;seleccion.disabled=false;modo.disabled=false;preparar.disabled=actual?.estado==='confirmada' || Boolean(actual?.corregida_excel);}
             };acciones.append(confirmar);
         }
         contenido.append(acciones,el('p',`Se muestran hasta 100 registros. El Excel contiene los ${numero(d.registros)} registros.`));
@@ -111,7 +112,7 @@ globalThis.LiquidacionesUI = (() => {
             ocupado=true;preparar.disabled=true;seleccion.disabled=true;modo.disabled=true;estado.textContent='Solicitando cálculo…';
             try{dibujar(await pedir('','POST',{dinamica:c.dinamica,periodo:c.periodo,modo:modo.value}));}
             catch(e){estado.textContent=e.message;preparar.disabled=false;}
-            finally{ocupado=false;seleccion.disabled=false;modo.disabled=false;preparar.disabled=['esperando','procesando','confirmada'].includes(actual?.estado);}
+            finally{ocupado=false;seleccion.disabled=false;modo.disabled=false;preparar.disabled=['esperando','procesando','confirmada'].includes(actual?.estado) || Boolean(actual?.corregida_excel);}
         };
     }
     return {iniciar};
