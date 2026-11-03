@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 from threading import Thread
 from urllib.parse import urlsplit
+from unittest.mock import patch
 
 from playwright.sync_api import sync_playwright, expect
 
@@ -13,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT.parent/'Backend_api_copia'))
 from test_banners_admin import BannersTests, imagen, banners
 from test_participantes import api, usuario_prueba
+from test_banners_audiencia import concurso
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -22,6 +24,11 @@ class Handler(SimpleHTTPRequestHandler):
 
 def main():
     caso=BannersTests(); caso.setUp()
+    catalogo=patch.object(api.gestor_banners,'obtener_dinamicas',return_value=[concurso()])
+    catalogo.start();caso.addCleanup(catalogo.stop)
+    from datetime import date
+    fecha=patch('banners_audiencia.hoy_bogota',return_value=date(2026,11,3))
+    fecha.start();caso.addCleanup(fecha.stop)
     server=ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler,directory=str(ROOT)))
     Thread(target=server.serve_forever,daemon=True).start()
     local=f'http://127.0.0.1:{server.server_port}'
@@ -41,6 +48,7 @@ def main():
                     route.fulfill(status=respuesta.status_code,body=respuesta.content,headers={'Content-Type':respuesta.headers.get('content-type','application/json'),'Access-Control-Allow-Origin':'*'})
                     return
                 if ruta=='/banners':
+                    assert req.headers.get('authorization','').startswith('Bearer ')
                     filas=[dict(zip(caso.hoja.valores[0],f)) for f in caso.hoja.valores[1:]]
                     datos={'banners':banners.publicos(filas)}
                 elif ruta=='/admin/vision-global':
@@ -72,6 +80,20 @@ def main():
             expect(page.locator('.carousel-slide')).to_have_count(3)
             page.wait_for_function("Array.from(document.querySelectorAll('.carousel-slide:last-child img')).every(img => img.complete && img.naturalWidth > 0)")
             page.wait_for_function("document.querySelector('.banners-fila:last-child img').naturalWidth > 0")
+            page.locator('.banners-fila').last.get_by_role('button',name='Editar',exact=True).click()
+            page.locator('[name=audiencia]').select_option('dinamica')
+            expect(page.locator('[data-vinculo]')).to_be_visible()
+            page.locator('[name=dinamica]').select_option(json.dumps(['Concurso prueba','2026-11'],separators=(',',':')))
+            expect(page.locator('[data-fechas]')).to_contain_text('01/11/2026 al 30/11/2026')
+            capturas=ROOT/'.preview'/'banners-dinamicas-20261103';capturas.mkdir(parents=True,exist_ok=True)
+            page.screenshot(path=str(capturas/'pc.png'))
+            page.set_viewport_size({'width':390,'height':900})
+            assert page.locator('#bannersPanel').evaluate('(e)=>e.scrollWidth<=e.clientWidth')
+            page.screenshot(path=str(capturas/'movil.png'))
+            page.set_viewport_size({'width':1440,'height':1050})
+            page.get_by_role('button',name='Guardar cambios',exact=True).click()
+            expect(page.locator('.banners-estado')).to_have_text('Banner actualizado.')
+            assert caso.listado()['banners'][-1]['dinamica']=='Concurso prueba'
             page.locator('.banners-fila').first.get_by_role('button',name='Desactivar',exact=True).click()
             expect(page.locator('.banners-estado')).to_have_text('Banner desactivado.')
             expect(page.locator('.carousel-slide')).to_have_count(2)

@@ -2,6 +2,31 @@
 globalThis.BannersAdmin = (() => {
     let api, alGuardar, panel, lista, estado, formulario, version, registros = [], editando = '', ocupado = false;
     const vistas = new Map();
+    let dinamicas = [];
+    const claveDinamica = d => JSON.stringify([d.dinamica, d.periodo]);
+    const fechaCorta = f => f ? f.split('-').reverse().join('/') : '';
+    function mostrarVinculo() {
+        const vinculada = formulario.elements.audiencia.value === 'dinamica';
+        formulario.querySelector('[data-vinculo]').hidden = !vinculada;
+        formulario.elements.dinamica.required = vinculada;
+        const elegida = dinamicas.find(d => claveDinamica(d) === formulario.elements.dinamica.value);
+        formulario.querySelector('[data-fechas]').textContent = elegida
+            ? `Del ${fechaCorta(elegida.fecha_inicio)} al ${fechaCorta(elegida.fecha_fin)}. Visible solo para participantes; supernumerarios y call center deben registrar ventas en un PDV participante.`
+            : 'Selecciona una dinámica activa. El banner seguirá sus fechas y participantes.';
+    }
+    function opcionesDinamicas(valor = '') {
+        const selector = formulario.elements.dinamica;
+        selector.replaceChildren();
+        const vacia = nodo('option', '', 'Selecciona una dinámica activa'); vacia.value = ''; selector.append(vacia);
+        dinamicas.forEach(d => { const opcion = nodo('option', '', `${d.periodo} · ${d.dinamica}`); opcion.value = claveDinamica(d); selector.append(opcion); });
+        if (valor && !dinamicas.some(d => claveDinamica(d) === valor)) {
+            const [nombre, periodo] = JSON.parse(valor);
+            const actual = nodo('option', '', `${periodo} · ${nombre} (vínculo actual, no disponible como nueva selección)`);
+            actual.value = valor; selector.append(actual);
+        }
+        selector.value = valor;
+        mostrarVinculo();
+    }
     const nodo = (tag, clase, texto) => {
         const e = document.createElement(tag);
         if (clase) e.className = clase;
@@ -18,11 +43,12 @@ globalThis.BannersAdmin = (() => {
     }
     function bloquear(valor) {
         ocupado = valor;
-        panel.querySelectorAll('input,button:not([data-cerrar])').forEach(e => e.disabled = valor);
+        panel.querySelectorAll('input,select,button:not([data-cerrar])').forEach(e => e.disabled = valor);
     }
     function limpiar() {
         editando = '';
         formulario.reset();
+        opcionesDinamicas();
         formulario.querySelector('h3').textContent = 'Nuevo banner';
         formulario.querySelector('[type=submit]').textContent = 'Publicar banner';
         for (const tipo of ['desktop', 'mobile']) {
@@ -35,6 +61,8 @@ globalThis.BannersAdmin = (() => {
     function editar(banner) {
         limpiar(); editando = banner.id;
         formulario.elements.titulo.value = banner.titulo;
+        formulario.elements.audiencia.value = banner.dinamica || banner.periodo ? 'dinamica' : 'general';
+        opcionesDinamicas(banner.dinamica || banner.periodo ? claveDinamica(banner) : '');
         formulario.querySelector('h3').textContent = 'Editar banner';
         formulario.querySelector('[type=submit]').textContent = 'Guardar cambios';
         for (const tipo of ['desktop', 'mobile']) {
@@ -46,7 +74,9 @@ globalThis.BannersAdmin = (() => {
         formulario.elements.titulo.focus({preventScroll:true});
     }
     async function cargar() {
-        const datos = await solicitar('/banners/administracion');
+        const [datos, catalogo] = await Promise.all([solicitar('/banners/administracion'), solicitar('/banners/dinamicas')]);
+        dinamicas = catalogo.dinamicas;
+        opcionesDinamicas(formulario.elements.dinamica.value);
         version = datos.version; registros = datos.banners;
         dibujar();
     }
@@ -69,7 +99,8 @@ globalThis.BannersAdmin = (() => {
             const img = nodo('img'); img.alt = '';
             BannerImagenes.asignar(img, b.desktop || b.mobile);
             const texto = nodo('div', 'banners-fila-texto');
-            texto.append(nodo('strong', '', b.titulo), nodo('small', '', `${indice + 1} · ${b.activo ? 'Visible' : 'Desactivado'}`));
+            texto.append(nodo('strong', '', b.titulo), nodo('small', '', `${indice + 1} · ${b.activo ? 'Habilitado' : 'Desactivado'}`));
+            texto.append(nodo('small', '', b.dinamica ? `${b.periodo} · ${b.dinamica} · Fechas y participantes de la dinámica` : 'General · Todos los perfiles'));
             const acciones = nodo('div', 'banners-acciones');
             const boton = (texto, funcion) => { const e = nodo('button', '', texto); e.type = 'button'; e.onclick = funcion; acciones.append(e); return e; };
             boton('Editar', () => editar(b));
@@ -99,6 +130,8 @@ globalThis.BannersAdmin = (() => {
           <div class="banners-contenido"><p class="banners-estado" role="status" aria-live="polite"></p>
           <form class="banners-formulario"><h3>Nuevo banner</h3>
           <label>Nombre del banner<input name="titulo" maxlength="120" required placeholder="Ejemplo: Campaña de octubre"></label>
+          <label>Visibilidad<select name="audiencia"><option value="general">General: todos los perfiles</option><option value="dinamica">Vinculado a una dinámica</option></select></label>
+          <div data-vinculo hidden><label>Dinámica activa<select name="dinamica"></select></label><p class="banners-fechas" data-fechas></p></div>
           <div class="banners-archivos">
             <div class="banners-archivo"><label>Imagen para PC<small>1920 × 800 px · JPG, PNG o WebP · hasta 8 MB</small><input type="file" name="desktop" accept="image/jpeg,image/png,image/webp"></label><img data-preview="desktop" alt="Vista previa para PC" hidden></div>
             <div class="banners-archivo"><label>Imagen para móvil<small>1080 × 1350 px · JPG, PNG o WebP · hasta 8 MB</small><input type="file" name="mobile" accept="image/jpeg,image/png,image/webp"></label><img data-preview="mobile" alt="Vista previa para móvil" hidden></div>
@@ -106,6 +139,8 @@ globalThis.BannersAdmin = (() => {
           <div class="banners-lista-titulo"><h3>Banners de la página</h3><button type="button" data-actualizar>Actualizar lista</button></div><div class="banners-lista"></div></div>`;
         document.body.append(panel);
         estado = panel.querySelector('.banners-estado'); lista = panel.querySelector('.banners-lista'); formulario = panel.querySelector('form');
+        formulario.elements.audiencia.onchange = mostrarVinculo;
+        formulario.elements.dinamica.onchange = mostrarVinculo;
         panel.querySelector('[data-cerrar]').onclick = () => panel.close();
         panel.addEventListener('click', e => { if(e.target === panel) { const r=panel.getBoundingClientRect(); if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom) panel.close(); } });
         panel.querySelector('[data-nuevo]').onclick = limpiar;
@@ -127,6 +162,12 @@ globalThis.BannersAdmin = (() => {
             if (!version) { informar('Actualiza la lista antes de guardar.',true); return; }
             const data = new FormData();
             data.set('version',version); data.set('titulo',formulario.elements.titulo.value.trim()); data.set('banner_id',editando);
+            data.set('audiencia', formulario.elements.audiencia.value);
+            if (formulario.elements.audiencia.value === 'dinamica') {
+                if (!formulario.elements.dinamica.value) { informar('Selecciona una dinámica activa.', true); return; }
+                const [nombre, periodo] = JSON.parse(formulario.elements.dinamica.value);
+                data.set('dinamica', nombre); data.set('periodo', periodo);
+            }
             for (const tipo of ['desktop','mobile']) {
                 const archivo = formulario.elements[tipo].files[0];
                 if (archivo) data.set(tipo,archivo);

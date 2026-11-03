@@ -827,14 +827,26 @@ function cargarDinamicasConFiltro() {
 let currentSlide = 0;
 let slideInterval;
 let bannersData = [];
+let bannersCargando = false;
+
+function ocultarBanners() {
+    clearInterval(slideInterval); bannersData = [];
+    document.getElementById('bannerCarousel').style.display = 'none';
+    document.getElementById('carouselSlides').replaceChildren();
+    document.getElementById('carouselDots').replaceChildren();
+}
 
 async function cargarBanners() {
+    if (bannersCargando) return;
+    const tokenBanners = localStorage.getItem('access_token');
+    if (!tokenBanners) { ocultarBanners(); return; }
+    bannersCargando = true;
     try {
         const url = `${API_URL}/banners?_cb=${new Date().getTime()}`;
         const res = await fetchConTiempo(url, {
-            headers: { 'ngrok-skip-browser-warning': '69420' }
+            headers: { 'ngrok-skip-browser-warning': '69420', Authorization: `Bearer ${tokenBanners}` }, cache: 'no-store'
         });
-        if (!res.ok) return;
+        if (!res.ok || localStorage.getItem('access_token') !== tokenBanners) { ocultarBanners(); return; }
         
         const data = await res.json();
         bannersData = data.banners;
@@ -851,9 +863,14 @@ async function cargarBanners() {
             document.getElementById('carouselDots').replaceChildren();
         }
     } catch (e) {
+        ocultarBanners();
         console.error("Error cargando banners:", e);
-    }
+    } finally { bannersCargando = false; }
 }
+
+// Revisa vigencia y participación mientras la página permanece abierta.
+setInterval(() => { if (!document.hidden) cargarBanners(); }, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) cargarBanners(); });
 
 function renderizarCarrusel() {
     const slidesContainer = document.getElementById('carouselSlides');

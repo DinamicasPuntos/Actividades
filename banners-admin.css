@@ -15,6 +15,9 @@
 .banners-formulario h3 { margin:0 0 16px; font-size:18px; }
 .banners-formulario label { display:block; font-weight:600; font-size:14px; }
 .banners-formulario input { display:block; margin:8px 0; width:100%; min-width:0; box-sizing:border-box; border:1px solid #c9d9de; border-radius:8px; padding:10px; font:inherit; }
+.banners-formulario select { display:block; margin:8px 0 16px; width:100%; min-width:0; box-sizing:border-box; border:1px solid #c9d9de; border-radius:8px; padding:11px; font:inherit; color:#16313c; background:white; }
+.banners-panel select:focus-visible { outline:3px solid #69c3bb; outline-offset:2px; }
+.banners-fechas { color:#52717d; font-size:13px; margin:0 0 16px; }
 .banners-archivos { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:16px 0; }
 .banners-archivo { min-width:0; padding:14px; background:#f4f8f9; border-radius:10px; }
 .banners-archivo small { color:#52717d; font-weight:400; display:block; margin-top:4px; }
