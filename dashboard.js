@@ -758,6 +758,7 @@ async function cargarDinamicas() {
                         </div>
                         
                         ${htmlEquipoSucursal}
+                        ${d.pago_solo_pdv ? '<p class="rotacion-condicion">Tu cuota individual sirve para seguimiento. Si el PDV cumple, recibes el pago por tus ventas aunque no alcances tu cuota individual.</p>' : ''}
                     </div>`;
             }).join('');
 
